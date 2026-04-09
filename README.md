@@ -1,2 +1,9 @@
-# Product-Analysis
-Sales System - Detects price changes, updates, analyzes pricing of products
+# n8n Workflows
+
+This folder contains automation workflows built using n8n, some for my life, to manage my time faster.
+
+## 📂 Projects
+
+- Competitor Product Analysis System
+
+---
