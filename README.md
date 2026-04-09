@@ -6,5 +6,6 @@ This folder contains automation workflows built using n8n, some for my life, to 
 
 - Competitor Product Analysis System
 - Cold Outreach Personaliser
-
+- Notes Formatter
+  
 ---
