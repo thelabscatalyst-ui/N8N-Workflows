@@ -1,1 +1,1585 @@
-
+{
+  "name": "Competitor's Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 5,
+              "triggerAtMinute": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -3920,
+        416
+      ],
+      "id": "98b7ef0b-4b60-4a59-8010-ba2974115053",
+      "name": "Cron"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-OSS-120B"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a product data extraction specialist.\n\nFrom the HTML content provided, extract ALL products you can find:\n\n{{ $json.combinedData }}\n\nReturn ONLY a valid JSON object. No explanation. No markdown. No preamble. No trailing commas.\n\nStrictly follow this exact output format:\n{\n  \"products\": [\n    {\n      \"name\": \"exact product name as shown on page\",\n      \"brand\": \"\",\n      \"description\": \"1-2 sentence summary of what this product is and who it's for\",\n      \"price\": 299.00,\n      \"currency\": \"USD\",\n      \"category\": \"product category or type\",\n      \"tags\": []\n    }\n  ]\n}\n\nRules:\n- price must be a number, never a string. If price is not found, use null.\n- tags must be an array. If no tags found, use [].\n- description must help distinguish this product from similar ones.\n- If you find variants (monthly/annual pricing), create separate objects for each.\n- Do not hallucinate products. Only extract what is visible on the page."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -3824,
+        640
+      ],
+      "id": "4df19c4f-4da8-4bfb-9262-8f227a1a8ef7",
+      "name": "HTML - Smooter",
+      "credentials": {
+        "openAiApi": {
+          "id": "mGc2XU10WKHnELMd",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ZvQvpp0b9hmr5xPV3yIl9mSVklC_z1tb6I2CM1wOOHg",
+          "mode": "list",
+          "cachedResultName": "Competitor's Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZvQvpp0b9hmr5xPV3yIl9mSVklC_z1tb6I2CM1wOOHg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ZvQvpp0b9hmr5xPV3yIl9mSVklC_z1tb6I2CM1wOOHg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3760,
+        416
+      ],
+      "id": "e8a0e631-aae0-4407-b052-58e5684cf2a7",
+      "name": "Comepetitor Links",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = [];\n\nfor (const item of $input.all()) {\n  const brand = item.json.brand;\n  const products = item.json.incoming_products;\n\n  for (const product of products) {\n    output.push({\n      json: {\n        brand: brand,\n        ...product\n      }\n    });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3488,
+        640
+      ],
+      "id": "26c3db42-8568-40d0-9d84-aaf2ea1981d0",
+      "name": "Separate Products"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.brand }}",
+                    "rightValue": "={{ \"Sleepy Owl Coffee\" }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5904037f-d60c-45b3-a7d9-665ac355de8f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f66dc821-a73c-46a2-b9da-43a9807dbd32",
+                    "leftValue": "={{ $json.brand }}",
+                    "rightValue": "={{ \"Blue Tokai Coffee\" }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "577d7edf-b19f-434c-bb9b-0bed4b401855",
+                    "leftValue": "={{ $json.brand }}",
+                    "rightValue": "={{ \"Araku\" }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ff45efe9-d17c-4137-86f9-5356ba9f879e",
+                    "leftValue": "={{ $json.brand }}",
+                    "rightValue": "={{ \"Another Brand\" }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -3152,
+        608
+      ],
+      "id": "7612a1c9-06c2-415d-a95a-509310e307ff",
+      "name": "Which Brand to update?"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-oss-120b"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2352,
+        112
+      ],
+      "id": "fcc86bbc-af67-487d-9fb1-02e2cc4824c7",
+      "name": "ChatGPT",
+      "credentials": {
+        "openAiApi": {
+          "id": "HUpabexxp7sCfp9K",
+          "name": "Nvidia Credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get Rows - Match this data with data you have received",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2480,
+        112
+      ],
+      "id": "bc2558cc-7bc1-4969-941b-745be61fc983",
+      "name": "Read Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append or update the row",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "description": "={{ $json.description }}",
+            "price": "={{ $json.price }}",
+            "category": "={{ $json.category }}",
+            "tags": "={{ $json.tags }}"
+          },
+          "matchingColumns": [
+            "name"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "curruncy",
+              "displayName": "curruncy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2560,
+        112
+      ],
+      "id": "d12612c2-990c-4aaf-aa03-0ecf404235f6",
+      "name": "Append or Update",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2352,
+        416
+      ],
+      "id": "084755bf-f995-42e4-b925-dfa68988a041",
+      "name": "ChatGPT1",
+      "credentials": {
+        "openAiApi": {
+          "id": "mDCnEoyTi9OMQOU6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get Rows - Match this data with data you have received",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2480,
+        416
+      ],
+      "id": "897946ca-0402-4602-a64a-9c330465042c",
+      "name": "Read Sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append or update the row",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2091141860,
+          "mode": "list",
+          "cachedResultName": "Blue Tokai",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=2091141860"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "description": "={{ $json.description }}",
+            "price": "={{ $json.price }}",
+            "category": "={{ $json.category }}",
+            "tags": "={{ $json.tags }}"
+          },
+          "matchingColumns": [
+            "name"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "curruncy",
+              "displayName": "curruncy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2560,
+        416
+      ],
+      "id": "6ca86df0-4d91-449b-9040-0314f32fc4f4",
+      "name": "Append or Update1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2336,
+        704
+      ],
+      "id": "b36c6235-027f-43ce-a895-6eecba390c45",
+      "name": "ChatGPT2",
+      "credentials": {
+        "openAiApi": {
+          "id": "mDCnEoyTi9OMQOU6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get Rows - Match this data with data you have received",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2560,
+        704
+      ],
+      "id": "84eabeb3-1436-4c72-86ab-e44d67286429",
+      "name": "Read Sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append or update the row",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "description": "={{ $json.description }}",
+            "price": "={{ $json.price }}",
+            "category": "={{ $json.category }}",
+            "tags": "={{ $json.tags }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "curruncy",
+              "displayName": "curruncy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2480,
+        704
+      ],
+      "id": "ba4ee377-1183-4691-bf30-1a49965a657f",
+      "name": "Append or Update2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data comparison assistant.\nYour job is to compare incoming product data with an existing Google Sheet and decide what to do.\nIncoming product data:\n{{ $json.name }}\n{{ $json.description }}\n{{ $json.price }}\n{{ $json.category }}\n{{ $json.tags }}\n\nYou have access to two tools:\n1. Read Sheet → to get existing products\n2. Append or Update Sheet → to add or update products\n\nFollow these rules strictly:\n1. First, read the existing sheet using the Read Sheet tool.\n\n2. For each incoming product:\n   -Using this read sheet, match the product using the product name (case-insensitive).\n\n3. If NO matching product is found:\n   → Append the product as a new row, using the append or update tool.\n\n4. If a matching product IS found:\n   → Compare all relevant fields (price, description, category, tags)\n\n   - If ANY field is different:\n     → Update that existing row with new data\n\n   - If ALL fields are the same:\n     → Do nothing (skip)\n\n5. Do NOT duplicate products.\n6. Do NOT update if nothing has changed.\n7. Keep actions minimal and accurate.\n\nOutput behavior:\n- Perform tool actions only when needed\n- Do not explain anything\n- Do not return unnecessary text {{ $json.name }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2592,
+        192
+      ],
+      "id": "e613f210-c11a-40ab-8fda-de976dca5ac3",
+      "name": "Sleepy Owl"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "98f27544-af4f-4599-ae8a-f417e287395d",
+              "leftValue": "={{ $json.output[0].content[0].text.flag }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2992,
+        400
+      ],
+      "id": "1182033c-db4c-4c50-af69-02a08d0b5919",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2091141860,
+          "mode": "list",
+          "cachedResultName": "Blue Tokai",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=2091141860"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -3264,
+        192
+      ],
+      "id": "52903c71-dd3c-4cff-8be7-9d243a577f83",
+      "name": "Blue Tokoi Coffee",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "You are a data comparison assistant.\nYour job is to compare incoming product data with an existing Google Sheet and decide what to do.\nIncoming product data:\n{{ $json.name }}\n{{ $json.description }}\n{{ $json.price }}\n{{ $json.category }}\n{{ $json.tags }}\n\nYou have access to two tools:\n1. Read Sheet → to get existing products\n2. Append or Update Sheet → to add or update products\n\nFollow these rules strictly:\n1. First, read the existing sheet using the Read Sheet tool.\n\n2. For each incoming product:\n   -Using this read sheet, match the product using the product name (case-insensitive).\n\n3. If NO matching product is found:\n   → Append the product as a new row, using the append or update tool.\n\n4. If a matching product IS found:\n   → Compare all relevant fields (price, description, category, tags)\n\n   - If ANY field is different:\n     → Update that existing row with new data\n\n   - If ALL fields are the same:\n     → Do nothing (skip)\n\n5. Do NOT duplicate products.\n6. Do NOT update if nothing has changed.\n7. Keep actions minimal and accurate.\n\nOutput behavior:\n- Perform tool actions only when needed\n- Do not explain anything\n- Do not return unnecessary text {{ $json.name }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2592,
+        496
+      ],
+      "id": "616deaa4-1d26-4383-a76b-838a86f0af85",
+      "name": "Blue Tokoi"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2336,
+        992
+      ],
+      "id": "81b701ed-450b-4747-ada9-36261528d018",
+      "name": "ChatGPT3",
+      "credentials": {
+        "openAiApi": {
+          "id": "mDCnEoyTi9OMQOU6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get Rows - Match this data with data you have received",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2560,
+        992
+      ],
+      "id": "f2adf557-877b-4425-9eac-f82faab895b1",
+      "name": "Read Sheet3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Append or update the row",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $json.name }}",
+            "description": "={{ $json.description }}",
+            "price": "={{ $json.price }}",
+            "category": "={{ $json.category }}",
+            "tags": "={{ $json.tags }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "curruncy",
+              "displayName": "curruncy",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -2480,
+        992
+      ],
+      "id": "b703dda6-c4ea-4a0e-90dc-bfc119121c80",
+      "name": "Append or Update3",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleepy Owl Coffee",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -3440,
+        240
+      ],
+      "id": "d844d87b-b500-43f1-b921-0a67b1f43d62",
+      "name": "Sleepy Owl Coffee",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 391937493,
+          "mode": "list",
+          "cachedResultName": "Araku",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit#gid=391937493"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        -3120,
+        160
+      ],
+      "id": "7e9d0cbe-985d-4ca0-a522-590026b439c6",
+      "name": "Araku Coffee",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data comparison assistant.\nYour job is to compare incoming product data with an existing Google Sheet and decide what to do.\nIncoming product data:\n{{ $json.name }}\n{{ $json.description }}\n{{ $json.price }}\n{{ $json.category }}\n{{ $json.tags }}\n\nYou have access to two tools:\n1. Read Sheet → to get existing products\n2. Append or Update Sheet → to add or update products\n\nFollow these rules strictly:\n1. First, read the existing sheet using the Read Sheet tool.\n\n2. For each incoming product:\n   -Using this read sheet, match the product using the product name (case-insensitive).\n\n3. If NO matching product is found:\n   → Append the product as a new row, using the append or update tool.\n\n4. If a matching product IS found:\n   → Compare all relevant fields (price, description, category, tags)\n\n   - If ANY field is different:\n     → Update that existing row with new data\n\n   - If ALL fields are the same:\n     → Do nothing (skip)\n\n5. Do NOT duplicate products.\n6. Do NOT update if nothing has changed.\n7. Keep actions minimal and accurate.\n\nOutput behavior:\n- Perform tool actions only when needed\n- Do not explain anything\n- Do not return unnecessary text {{ $json.name }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2576,
+        784
+      ],
+      "id": "4e309715-9dad-4d3c-b774-c7d17add2cb9",
+      "name": "Araku"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a data comparison assistant.\nYour job is to compare incoming product data with an existing Google Sheet and decide what to do.\nIncoming product data:\n{{ $json.name }}\n{{ $json.description }}\n{{ $json.price }}\n{{ $json.category }}\n{{ $json.tags }}\n\nYou have access to two tools:\n1. Read Sheet → to get existing products\n2. Append or Update Sheet → to add or update products\n\nFollow these rules strictly:\n1. First, read the existing sheet using the Read Sheet tool.\n\n2. For each incoming product:\n   -Using this read sheet, match the product using the product name (case-insensitive).\n\n3. If NO matching product is found:\n   → Append the product as a new row, using the append or update tool.\n\n4. If a matching product IS found:\n   → Compare all relevant fields (price, description, category, tags)\n\n   - If ANY field is different:\n     → Update that existing row with new data\n\n   - If ALL fields are the same:\n     → Do nothing (skip)\n\n5. Do NOT duplicate products.\n6. Do NOT update if nothing has changed.\n7. Keep actions minimal and accurate.\n\nOutput behavior:\n- Perform tool actions only when needed\n- Do not explain anything\n- Do not return unnecessary text {{ $json.name }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2576,
+        1072
+      ],
+      "id": "d2801cab-c1c0-4f9d-ad37-2ab68bc12a38",
+      "name": "Another Brand"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "huj",
+        "message": "Hello",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2832,
+        160
+      ],
+      "id": "4c2eb9c8-258b-4023-94fc-85b847736018",
+      "name": "Create a draft",
+      "webhookId": "de6e53e9-b25f-4485-8f18-f8c52f373b8f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iTy7yjMRp5MmZGXW",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mock data — 3 products per brand, different scenarios per brand\n// Brand 1: Sleepy Owl — one price increase, one new product\n// Brand 2: Blue Tokai — one price drop, one removed product  \n// Brand 3: Araku — no changes at all (tests flag:0 path)\n\nconst mockData = [\n  {\n    brand: \"Sleepy Owl Coffee\",\n    incoming_products: [\n      {\n        brand: \"Sleepy Owl Coffee\",\n        name: \"Dark Roast\",\n        description: \"Rich deep roast of Arabica beans, chocolatey with milk.\",\n        price: 699,        // was 599 in sheet — tests PRICE INCREASE +16.7%\n        currency: \"INR\",\n        category: \"Ground Coffee\",\n        tags: [\"sale\"]\n      },\n      {\n        brand: \"Sleepy Owl Coffee\",\n        name: \"French Vanilla\",\n        description: \"100% Arabica blended with French Vanilla.\",\n        price: 599,        // same price — tests NO CHANGE\n        currency: \"INR\",\n        category: \"Ground Coffee\",\n        tags: [\"sale\"]\n      },\n      {\n        brand: \"Sleepy Owl Coffee\",\n        name: \"Cold Brew Pro\",\n        description: \"New premium cold brew concentrate, ready to drink.\",\n        price: 849,        // not in sheet — tests NEW PRODUCT\n        currency: \"INR\",\n        category: \"Cold Brew\",\n        tags: [\"new\"]\n      }\n      // Note: \"Hazelnut\" is in sheet but missing here — tests REMOVED PRODUCT\n    ]\n  },\n  {\n    brand: \"Blue Tokai Coffee\",\n    incoming_products: [\n      {\n        brand: \"Blue Tokai Coffee Roasters\",\n        name: \"Customised Sampler Pack\",\n        description: \"Sampler pack with various coffee types.\",\n        price: 599,        // was 700 in sheet — tests PRICE DECREASE -14.4%\n        currency: \"INR\",\n        category: \"Combo Pack\",\n        tags: []\n      },\n      {\n        brand: \"Blue Tokai Coffee\",\n        name: \"The Rich & Bold Trio Pack-Coffee beans\",\n        description: \"Trio pack featuring Vienna Roast, French Roast, Silver Oak.\",\n        price: 700,        // same — tests NO CHANGE\n        currency: \"INR\",\n        category: \"Combo Pack\",\n        tags: [\"best seller\"]  // tag added — tests TAG UPDATE\n      },\n      {\n        brand: \"Blue Tokai Coffee\",\n        name: \"Vienna Roast\",\n        description: \"Single origin medium dark roast from South India.\",\n        price: 450,        // not in sheet — tests NEW PRODUCT\n        currency: \"INR\",\n        category: \"Coffee Beans\",\n        tags: []\n      }\n    ]\n  },\n  {\n    brand: \"Araku\",\n    incoming_products: [\n      {\n        brand: \"Araku\",\n        name: \"Araku Emerald\",\n        description: \"Tribal grown organic coffee from Araku valley.\",\n        price: 550,        // same as sheet\n        currency: \"INR\",\n        category: \"Coffee Beans\",\n        tags: []\n      },\n      {\n        brand: \"Araku\",\n        name: \"Araku Gold\",\n        description: \"Premium single estate coffee, light roast.\",\n        price: 750,        // same as sheet\n        currency: \"INR\",\n        category: \"Coffee Beans\",\n        tags: []\n      },\n      {\n        brand: \"Araku\",\n        name: \"Araku Instant\",\n        description: \"100% pure coffee, no chicory.\",\n        price: 320,        // same as sheet\n        currency: \"INR\",\n        category: \"Instant Coffee\",\n        tags: []\n      }\n      // Tests flag:0 — nothing changed, digest should be skipped\n    ]\n  }\n];\n\n// Return each brand as a separate item\nreturn mockData.map(d => ({ json: d }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4192,
+        720
+      ],
+      "id": "80158c67-e6e6-4810-90e8-c04874f171d3",
+      "name": "Test Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const combined = items.map(item => {\n  const data = item.json.data;\n  \n  if (typeof data === 'string') return data;\n  if (Array.isArray(data)) return data.join(' ');\n  if (typeof data === 'object') return JSON.stringify(data);\n  return String(data);\n}).join('\\n\\n---\\n\\n');\n\nreturn [{\n  json: {\n    combinedData: combined\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4192,
+        560
+      ],
+      "id": "2b833cc1-bbed-493c-bfcf-bfcb40ecbd62",
+      "name": "Combining All Items"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are a pricing and product intelligence analyst for a specialty coffee brand.\nYou have access to multiple Read Sheet tools — one per competitor brand.\nYou must read ONLY the sheet that matches the brand in the incoming data.\n\nTOOL SELECTION RULES — follow exactly:\n- If brand contains \"Sleepy Owl\" → call ONLY the \"Sleepy Owl\" sheet tool\n- If brand contains \"Blue Tokai\" → call ONLY the \"Blue Tokoi1\" sheet tool\n- If brand contains \"Araku\" → call ONLY the \"Araku1\" sheet tool\n- Call the matched sheet tool ONCE. Store the result. Do NOT call any tool again.\n- Do NOT read all sheets. Do NOT read unmatched sheets.\n- If brand does not match any known sheet → set flag to 0 and stop.\n\nOUTPUT RULES — follow exactly:\n- Return ONLY valid JSON. No text. No markdown. No explanation.\n- Do NOT include empty fields, null values, or empty arrays.\n- If absolutely nothing changed → return only { \"flag\": 0 }"
+            },
+            {
+              "content": "=Incoming scraped products:\n{{ $json.brand }}{{ $json.name }}{{ $json.description }}{{ $json.price }}{{ $json.currency }}{{ $json.category }}{{ $json.tags }}\nExtract the brand name from the \"brand\" field present in the incoming products array.\nUse that as the brand name for all steps in this analysis.\n\nFollow these steps in order:\n\nSTEP 1 — READ SHEET\nRead the sheet tool that matches the brand above. Call it once. Store all rows.\n\nSTEP 2 — COMPARE PRODUCTS\nFor each incoming product, find its match in the sheet by Product Name (exact match).\nSplit into these groups:\n- New: present in incoming but NOT in sheet\n- Removed: present in sheet but NOT in incoming\n- Changed: present in both but price or tags are different\n- Unchanged: present in both, nothing changed\n\nIgnore unchanged products completely — do not include them in output.\n\nSTEP 3 — PRICE ANALYSIS\nOnly for products where price changed:\n- Old price (from sheet) vs new price (from incoming)\n- Calculate % change: ((new - old) / old) × 100, round to 1 decimal\n- Label as INCREASE or DECREASE\n- Flag as HIGH PRIORITY if increase is 10% or more\n- Identify biggest increase and biggest drop across all products\n- Detect patterns: e.g. entire category getting more expensive\n\nSTEP 4 — CATEGORY INSIGHTS\nOnly include if meaningful:\n- Which category has the most changes\n- Any category trending cheaper or more expensive\n- Skip this section entirely if no pattern exists\n\nSTEP 5 — KEY INSIGHTS\nWrite 3 to 5 short takeaways focused on competitive impact.\nThink like a sales manager — what does this mean for our pricing strategy?\nOnly include if genuinely useful. Skip if nothing significant.\n\nSTEP 6 — SET FLAG\n- flag: 1 → if any changes exist (new, removed, price change, tag change)\n- flag: 0 → if nothing changed at all\n\nSTEP 7 — BUILD OUTPUT JSON\nInclude ONLY fields where data exists. Skip all others.\n\n{\n  \"flag\": 1,\n  \"brand\": \"\",\n  \"new_products\": [\n    {\n      \"name\": \"product name\",\n      \"price\": 0,\n      \"category\": \"category\",\n      \"tags\": \"tags or empty string\"\n    }\n  ],\n  \"removed_products\": [\"product name 1\", \"product name 2\"],\n  \"price_summary\": [\n    {\n      \"product\": \"product name\",\n      \"old_price\": 0,\n      \"new_price\": 0,\n      \"change_percent\": \"+12.5%\",\n      \"direction\": \"INCREASE\",\n      \"priority\": \"HIGH\"\n    }\n  ],\n\n  \"category_insights\": \"one or two sentences only if pattern exists\",\n  \"key_insights\": \"3 to 5 bullet points as a single string, each on new line, only if any change found\",\n  \"biggest_increase\": \"product name +X%\",\n  \"biggest_drop\": \"product name -X%\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -3312,
+        400
+      ],
+      "id": "448715ec-24b5-41a9-a9fd-2fa4ff46e068",
+      "name": "Smart Analyser",
+      "credentials": {
+        "openAiApi": {
+          "id": "mDCnEoyTi9OMQOU6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Separate Products": [
+      {
+        "json": {
+          "brand": "Sleepy Owl Coffee",
+          "name": "Dark Roast",
+          "description": "Rich deep roast of Arabica beans, chocolatey with milk.",
+          "price": 699,
+          "currency": "INR",
+          "category": "Ground Coffee",
+          "tags": [
+            "sale"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Sleepy Owl Coffee",
+          "name": "French Vanilla",
+          "description": "100% Arabica blended with French Vanilla.",
+          "price": 599,
+          "currency": "INR",
+          "category": "Ground Coffee",
+          "tags": [
+            "sale"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Sleepy Owl Coffee",
+          "name": "Cold Brew Pro",
+          "description": "New premium cold brew concentrate, ready to drink.",
+          "price": 849,
+          "currency": "INR",
+          "category": "Cold Brew",
+          "tags": [
+            "new"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Blue Tokai Coffee Roasters",
+          "name": "Customised Sampler Pack",
+          "description": "Sampler pack with various coffee types.",
+          "price": 599,
+          "currency": "INR",
+          "category": "Combo Pack",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Blue Tokai Coffee",
+          "name": "The Rich & Bold Trio Pack-Coffee beans",
+          "description": "Trio pack featuring Vienna Roast, French Roast, Silver Oak.",
+          "price": 700,
+          "currency": "INR",
+          "category": "Combo Pack",
+          "tags": [
+            "best seller"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Blue Tokai Coffee",
+          "name": "Vienna Roast",
+          "description": "Single origin medium dark roast from South India.",
+          "price": 450,
+          "currency": "INR",
+          "category": "Coffee Beans",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Araku",
+          "name": "Araku Emerald",
+          "description": "Tribal grown organic coffee from Araku valley.",
+          "price": 550,
+          "currency": "INR",
+          "category": "Coffee Beans",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Araku",
+          "name": "Araku Gold",
+          "description": "Premium single estate coffee, light roast.",
+          "price": 750,
+          "currency": "INR",
+          "category": "Coffee Beans",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Araku",
+          "name": "Araku Instant",
+          "description": "100% pure coffee, no chicory.",
+          "price": 320,
+          "currency": "INR",
+          "category": "Instant Coffee",
+          "tags": []
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Comepetitor Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comepetitor Links": {
+      "main": [
+        [
+          {
+            "node": "HTML - Smooter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML - Smooter": {
+      "main": [
+        [
+          {
+            "node": "Separate Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separate Products": {
+      "main": [
+        [
+          {
+            "node": "Which Brand to update?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Smart Analyser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Which Brand to update?": {
+      "main": [
+        [
+          {
+            "node": "Sleepy Owl",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blue Tokoi",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Araku",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Another Brand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sleepy Owl",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sleepy Owl",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or Update": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sleepy Owl",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Blue Tokoi",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Blue Tokoi",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or Update1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Blue Tokoi",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Araku",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Araku",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or Update2": {
+      "ai_tool": [
+        [
+          {
+            "node": "Araku",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sleepy Owl": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Create a draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Blue Tokoi Coffee": {
+      "ai_tool": [
+        [
+          {
+            "node": "Smart Analyser",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ChatGPT3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Another Brand",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Sheet3": {
+      "ai_tool": [
+        [
+          {
+            "node": "Another Brand",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or Update3": {
+      "ai_tool": [
+        [
+          {
+            "node": "Another Brand",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sleepy Owl Coffee": {
+      "ai_tool": [
+        [
+          {
+            "node": "Smart Analyser",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Araku Coffee": {
+      "ai_tool": [
+        [
+          {
+            "node": "Smart Analyser",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Data": {
+      "main": [
+        []
+      ]
+    },
+    "Combining All Items": {
+      "main": [
+        []
+      ]
+    },
+    "Smart Analyser": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "62a93f0b-f082-4d75-b421-8e370f9af64e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "20dd2d0d8018217dbd165d841d4c440719c8e1a971c716ad7532a041cf2470f8"
+  },
+  "id": "85fhIj97W8TowPNB",
+  "tags": []
+}
