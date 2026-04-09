@@ -5,5 +5,6 @@ This folder contains automation workflows built using n8n, some for my life, to 
 ## 📂 Projects
 
 - Competitor Product Analysis System
+- Cold Outreach Personaliser
 
 ---
