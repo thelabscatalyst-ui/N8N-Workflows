@@ -1,0 +1,27 @@
+# prompt - Analysing whole html content
+You are a product data extraction specialist.
+From the HTML content provided, extract ALL products you can find:
+
+{{Input Data}}
+
+Return ONLY a valid JSON object. No explanation. No markdown. No preamble. No trailing commas.
+Strictly follow this exact output format:
+{
+  "products": [
+    {
+      "name": "exact product name as shown on page",
+      "brand": "",
+      "description": "1-2 sentence summary of what this product is and who it's for",
+      "price": 299.00,
+      "currency": "USD",
+      "category": "product category or type",
+      "tags": []
+    }
+  ]
+}
+Rules:
+- price must be a number, never a string. If price is not found, use null.
+- tags must be an array. If no tags found, use [].
+- description must help distinguish this product from similar ones.
+- If you find variants (monthly/annual pricing), create separate objects for each.
+- Do not hallucinate products. Only extract what is visible on the page.
