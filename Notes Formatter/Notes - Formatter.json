@@ -1,0 +1,256 @@
+{
+  "name": "Notes Organiser",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/1l3k_JlLbuHaC88abmWBURFEwaC_89kSWVDEeGaxwGFo/edit?tab=t.0"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        192
+      ],
+      "id": "79a3e3b9-6f8e-44f1-9c27-123dff5a805c",
+      "name": "My Scribble Page",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "qxDJ99HPPXMAppHG",
+          "name": "Google Docs OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "openai/gpt-oss-120b",
+          "mode": "list",
+          "cachedResultName": "OPENAI/GPT-OSS-120B"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=# Role\nYou are an expert academic note organizer and document formatter. Your task is to transform raw, unstructured classroom notes into clean, structured, and highly readable HTML documents suitable for study and revision.\n\n# Input\nYou will receive raw notes that may include:\n- Grammar and spelling errors\n- Unstructured or scattered ideas\n- Missing or unclear headings\n- Mixed formatting and incomplete sentences\n\nBelow is provided raw data:\n{{ $json.content }}\n\n# Task\n- Correct grammar and spelling without altering the original meaning.\n- Organize the content into a logical hierarchy:\n  - Main topics as <h1>\n  - Subtopics as <h2>\n  - Supporting sections as <h3>\n- Group related ideas into clear paragraphs using <p>.\n- Convert lists into properly structured bullet points using <ul> and <li>.\n- Emphasize key terms using <strong> where appropriate.\n- Ensure clarity, readability, and logical flow throughout the document.\n- Do NOT add new information or external knowledge.\n- Keep the content concise and structured for effective revision.\n\n# Output Requirements\n- Format: Output ONLY valid HTML (no markdown, no JSON, no explanations).\n- Structure: Use semantic HTML5 elements including headings (<h1>, <h2>, <h3>), paragraphs (<p>), lists (<ul>, <li>).\n- Styling: Include a minimal inline <style> block for readability (font, spacing, line-height, basic hierarchy).\n- Layout: Wrap all content inside a single parent <div>.\n- Consistency: Ensure proper tag nesting and closing.\n- Strict Rule: Output must always be clean, complete, and renderable HTML."
+            },
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        192
+      ],
+      "id": "a2264dac-0631-4b29-a34e-d61f91fbc551",
+      "name": "Magic Organiser",
+      "credentials": {
+        "openAiApi": {
+          "id": "HUpabexxp7sCfp9K",
+          "name": "Nvidia Credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## AI Block\nPrompted brain for organisation, completely formats the raw data and change it into styled HTML content for easy handling.",
+        "height": 144,
+        "width": 256
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        48,
+        320
+      ],
+      "typeVersion": 1,
+      "id": "e053a901-288d-4df7-9749-20699d9a862f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Scribble Page\nThis is the page where i would scribble my ideas or brainstorm it, and on manually pressing a button, the raw data is organised, we can schedule the timing too",
+        "height": 176,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -304,
+        368
+      ],
+      "typeVersion": 1,
+      "id": "c49af776-e942-4b09-9c12-1bd9d4ae2732",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "multipart/related; boundary=foo_bar_baz",
+        "body": "=--foo_bar_baz\nContent-Type: application/json; charset=UTF-8\n\n{\n  \"name\": \"{{ $json['Document Name'] }}\",\n  \"mimeType\": \"application/vnd.google-apps.document\"\n}\n\n--foo_bar_baz\nContent-Type: text/html; charset=UTF-8\n\n{{ $json.output[0].content[0].text }}\n--foo_bar_baz--",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        544,
+        192
+      ],
+      "id": "92772488-a06d-4a18-89ef-6c3751df1435",
+      "name": "HTTP Request",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "nUiXIvywsYJDEeGo",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5082f450-434b-40a2-95ab-bba3593b029c",
+              "name": "Document Name",
+              "value": "Organised Notes",
+              "type": "string"
+            },
+            {
+              "id": "e6a8cf00-d27e-4e5c-92f6-fcb2c1902575",
+              "name": "output[0].content[0].text",
+              "value": "={{ $json.output[0].content[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        192
+      ],
+      "id": "cc3fbc84-053c-47c3-8e5f-286a2f993203",
+      "name": "Set the fields"
+    },
+    {
+      "parameters": {
+        "content": "## Automatic Uploading\nThis block manages and upload the final content in the google drive as cleared notes.",
+        "width": 272,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        352
+      ],
+      "typeVersion": 1,
+      "id": "90262115-2dea-4931-98fc-670e273a376c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## NOTES ORGANISER AND FORMATTER\nThis is my N8N project, helping me in taking notes in thoery lectures without worrying any grammatical or logical error, formatting, proper flow, which saves a lot time.\n\n- fetches data from the docs\n- AI brain prompted to organise, correct and format raw data\n- convert it into HTML, with slight inline designing.\n- set fields and upload it into the drive, with markdown.",
+        "height": 224,
+        "width": 672,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -144,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "69572dbd-51c6-4401-9af1-a3c33de88080",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "monthsInterval": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -304,
+        192
+      ],
+      "id": "4414231d-d698-4a8e-8cb0-62e5d258ae18",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "My Scribble Page": {
+      "main": [
+        [
+          {
+            "node": "Magic Organiser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Magic Organiser": {
+      "main": [
+        [
+          {
+            "node": "Set the fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set the fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "My Scribble Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "01854c89-b2ab-45a3-a3cd-5fb59f34d977",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "20dd2d0d8018217dbd165d841d4c440719c8e1a971c716ad7532a041cf2470f8"
+  },
+  "id": "GZsuhHRJg9HaFJVz",
+  "tags": []
+}
