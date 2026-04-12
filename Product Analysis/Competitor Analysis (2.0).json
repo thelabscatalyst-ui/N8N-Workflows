@@ -1,0 +1,703 @@
+{
+  "name": "Competitor's Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Architecture\nTRIGGER -> Read Links -> Batch (1 at a time)\n-> Scrape -> Strip HTML (Code) -> GPT-4o-mini extract\n-> Read catalogue -> Code DIFF (zero tokens)\n-> IF changes: Write Sheet + Email | ELSE: Skip",
+        "height": 140,
+        "width": 500,
+        "color": 2
+      },
+      "id": "874fdb88-28bb-4df2-ae09-27eefe4f01d6",
+      "name": "Sticky Note 02eb96fd",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1632,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup\n1. Add sheet_tab column to Links sheet (must match tab name in Catalogue)\n2. Connect: Google Sheets, OpenAI, Gmail credentials\n3. Set your email in Send Alert Email node\n4. New competitor = add row to Links sheet only",
+        "height": 168,
+        "width": 500,
+        "color": 3
+      },
+      "id": "d4eeea30-5b8b-433e-ac4c-8e738036f927",
+      "name": "Sticky Note 0364a96f",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Token Savings\nOLD: GPT-OSS-120B on raw HTML (50k-200k tokens/page)\nNEW: GPT-4o-mini on clean text (2k-4k tokens/page)\nOLD: LLM agent per product for comparison\nNEW: Code diff zero tokens for comparison\nSavings: ~95% per run",
+        "height": 168,
+        "width": 436,
+        "color": 4
+      },
+      "id": "5bac22fc-2108-40bf-b574-0db6b705fd38",
+      "name": "Sticky Note 5dfe042b",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "id": "6de04d43-497f-4afd-9555-748c194a4c90",
+      "name": "Weekly Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2400,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1ZvQvpp0b9hmr5xPV3yIl9mSVklC_z1tb6I2CM1wOOHg"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Links"
+        },
+        "options": {}
+      },
+      "id": "26e76af3-7b55-4b78-b3eb-7816a462a90c",
+      "name": "Read Competitor Links",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2208,
+        160
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const d = $input.item.json;\nconst s = d.summary;\nlet h = '<h2>Competitor Intelligence: ' + d.brand + '</h2>';\nh += '<p>Run: ' + new Date().toLocaleDateString('en-IN') + '</p>';\nh += '<p>New: <b>' + s.new_count + '</b> | Changed: <b>' + s.updated_count + '</b> | Removed: <b>' + s.removed_count + '</b></p>';\nif (d.new_products?.length) { h += '<h3 style=\"color:#2e7d32\">New Products</h3><ul>'; for(const p of d.new_products) h += '<li><b>'+p.name+'</b> Rs.'+(p.price||'N/A')+' ['+p.category+']</li>'; h += '</ul>'; }\nif (d.updated_products?.length) { h += '<h3 style=\"color:#e65100\">Price Changes</h3><ul>'; for(const p of d.updated_products) { const up=parseFloat(p.price_delta)>0; h += '<li><b>'+p.name+'</b>: Rs.'+p.old_price+' to Rs.'+p.price+' ('+(up?'+':'')+p.price_delta+')</li>'; } h += '</ul>'; }\nif (d.removed_products?.length) { h += '<h3 style=\"color:#888\">Removed</h3><ul>'; for(const n of d.removed_products) h += '<li>'+n+'</li>'; h += '</ul>'; }\nh += '<p><a href=\"https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA\">Open Catalogue</a></p>';\nreturn [{ json: { brand: d.brand, html: h, subject: 'Competitor Alert: '+d.brand+' ('+s.new_count+' new, '+s.updated_count+' changed)' } }];"
+      },
+      "id": "57f4612d-e7e3-4e9b-80af-151ef79d47b2",
+      "name": "Build Email Digest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1760,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "message": "={{ $json.html }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b948051e-d36e-47c3-8a75-b48fbad86a5f",
+      "name": "Send Alert Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1536,
+        208
+      ],
+      "webhookId": "49d50f99-9deb-4b56-948b-935959744c2a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iTy7yjMRp5MmZGXW",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "98819d50-1500-4994-ab8b-49aae7aec05e",
+      "name": "All Done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1328,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const brand = $('Striping').item.json.brand;\nconst sheetTab = $('Striping').item.json.sheet_tab;\nlet raw = $input.item.json.message?.content || '';\ntry { raw = raw.replace(/^```json\\n?/,'').replace(/\\n?```$/,'').trim(); } catch(e){}\nlet parsed;\ntry { parsed = JSON.parse(raw); } catch(e) { return [{ json: { brand, sheet_tab: sheetTab, products: [] } }]; }\nconst today = new Date().toISOString().split('T')[0];\nconst products = (parsed.products||[]).map(p=>({ brand, sheet_tab: sheetTab, name:(p.name||'').trim(), description:(p.description||'').trim(), price: typeof p.price==='number'?p.price:null, category:(p.category||'').trim(), tags: Array.isArray(p.tags)?p.tags.join(', '):(p.tags||''), scraped_at: today }));\nreturn [{ json: { brand, sheet_tab: sheetTab, products } }];"
+      },
+      "id": "22372f90-4156-42d4-b383-e6a6817467c5",
+      "name": "Parse Products",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.has_changes }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              },
+              "rightValue": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9f6e463c-f6cd-400f-bed5-90002fde22ee",
+      "name": "Any Changes Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -688,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const d = $input.item.json;\nconst tab = d.sheet_tab;\nconst rows = [...(d.new_products||[]),...(d.updated_products||[])];\nreturn rows.map(p=>({ json: { sheet_tab: tab, name: p.name, description: p.description, price: p.price, category: p.category, tags: p.tags, scraped_at: p.scraped_at||new Date().toISOString().split('T')[0] } }));"
+      },
+      "id": "68dae19e-ed16-4245-883e-a78515dd4296",
+      "name": "Flatten for Sheet Write",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $json.sheet_tab }}"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "d8fdddb0-b7aa-47e2-9c3f-569c083c61a1",
+      "name": "Update Catalogue Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -816,
+        224
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "b12d3c30-4448-4180-83a6-f1e431955147",
+      "name": "Next Competitor",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "f9d3fd4a-ec55-466c-9702-81c19ae0f323",
+      "name": "One Competitor at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2016,
+        160
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "839f8764-7c76-4564-bb79-693ec5bd82e0",
+      "name": "No Changes Skip",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -224
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json[\"Product/Pricing page URL\"] }}",
+        "options": {}
+      },
+      "id": "81e2f56f-70a5-462f-af9c-c632b390fcc6",
+      "name": "Scraping",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1840,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const html = $input.item.json.data || '';\nconst brand = $('Read Competitor Links').item.json.Brand;\nconst sheetTab = $('Read Competitor Links').item.json.sheet_tab;\nlet c = html.replace(/<script[\\s\\S]*?<\\/script>/gi,'').replace(/<style[\\s\\S]*?<\\/style>/gi,'').replace(/<nav[\\s\\S]*?<\\/nav>/gi,'').replace(/<footer[\\s\\S]*?<\\/footer>/gi,'').replace(/<header[\\s\\S]*?<\\/header>/gi,'').replace(/<svg[\\s\\S]*?<\\/svg>/gi,'');\nconst matches = c.match(/<[^>]*(product|card|price)[^>]*>[\\s\\S]*?<\\/[^>]+>/gi) || [];\nlet blocks = matches.slice(0,60).join(' ');\nif (blocks.length < 200) blocks = c.replace(/<[^>]+>/g,' ').replace(/\\s+/g,' ').trim();\nconst text = blocks.replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\\s+/g,' ').trim().slice(0,10000);\nreturn [{ json: { brand, sheet_tab: sheetTab, cleaned_text: text } }];"
+      },
+      "id": "57d514b9-6d3c-444d-8e31-69e7fc36739d",
+      "name": "Striping",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "gpt-4o-mini"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Extract ALL products from the text. Return ONLY valid JSON no markdown.\nFormat: {\"products\":[{\"name\":\"string\",\"description\":\"string\",\"price\":0,\"category\":\"string\",\"tags\":[]}]}\nRules: price=number or null, tags=array, no hallucination."
+            },
+            {
+              "content": "=Brand: {{ $json.brand }}\n\n{{ $json.cleaned_text }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 2000,
+          "textFormat": {
+            "textOptions": {
+              "type": "json_object"
+            }
+          },
+          "temperature": 0.1
+        }
+      },
+      "id": "dd9eb737-2517-4478-898e-3769a28bc50f",
+      "name": "Extract Products",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -1520,
+        -16
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "mDCnEoyTi9OMQOU6",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $json.sheet_tab }}"
+        },
+        "options": {}
+      },
+      "id": "de978ece-9311-4ba4-8792-e157d202371b",
+      "name": "Read Summary",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1056,
+        -16
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "O5J0MIbtTHuGSYtB",
+          "name": "Meher - Sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const all = $input.all();\nconst first = all[0].json;\nconst incoming = first.products || [];\nconst brand = first.brand;\nconst sheetTab = first.sheet_tab;\nconst existing = all.slice(1).map(i=>i.json);\nconst map = {};\nfor (const r of existing) { const k=(r.name||'').toLowerCase().trim(); if(k) map[k]=r; }\nconst newP=[], updatedP=[], unchanged=[];\nfor (const p of incoming) {\n  const k=(p.name||'').toLowerCase().trim();\n  if (!k) continue;\n  const ex = map[k];\n  if (!ex) { newP.push({...p, change_type:'NEW'}); continue; }\n  const changed = String(ex.price)!==String(p.price)||(ex.description||'').trim()!==(p.description||'').trim()||(ex.category||'').trim()!==(p.category||'').trim()||(ex.tags||'').trim()!==(p.tags||'').trim();\n  if (changed) updatedP.push({...p, old_price:ex.price, change_type:'UPDATED', price_delta: (p.price-parseFloat(ex.price||0)).toFixed(0)});\n  else unchanged.push(p.name);\n}\nconst inNames = new Set(incoming.map(p=>(p.name||'').toLowerCase().trim()));\nconst removed = existing.filter(r=>r.name&&!inNames.has((r.name||'').toLowerCase().trim())).map(r=>r.name);\nreturn [{ json: { brand, sheet_tab: sheetTab, has_changes: newP.length>0||updatedP.length>0||removed.length>0, new_products: newP, updated_products: updatedP, removed_products: removed, unchanged_count: unchanged.length, summary: { new_count: newP.length, updated_count: updatedP.length, removed_count: removed.length } } }];"
+      },
+      "id": "0afc7032-c9fe-4783-a41d-9bfc4adbedca",
+      "name": "Detect Changes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -16
+      ]
+    }
+  ],
+  "pinData": {
+    "Separate Products": [
+      {
+        "json": {
+          "brand": "Sleepy Owl Coffee",
+          "name": "Dark Roast",
+          "description": "Rich deep roast of Arabica beans, chocolatey with milk.",
+          "price": 699,
+          "currency": "INR",
+          "category": "Ground Coffee",
+          "tags": [
+            "sale"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Sleepy Owl Coffee",
+          "name": "French Vanilla",
+          "description": "100% Arabica blended with French Vanilla.",
+          "price": 599,
+          "currency": "INR",
+          "category": "Ground Coffee",
+          "tags": [
+            "sale"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Sleepy Owl Coffee",
+          "name": "Cold Brew Pro",
+          "description": "New premium cold brew concentrate, ready to drink.",
+          "price": 849,
+          "currency": "INR",
+          "category": "Cold Brew",
+          "tags": [
+            "new"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Blue Tokai Coffee Roasters",
+          "name": "Customised Sampler Pack",
+          "description": "Sampler pack with various coffee types.",
+          "price": 599,
+          "currency": "INR",
+          "category": "Combo Pack",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Blue Tokai Coffee",
+          "name": "The Rich & Bold Trio Pack-Coffee beans",
+          "description": "Trio pack featuring Vienna Roast, French Roast, Silver Oak.",
+          "price": 700,
+          "currency": "INR",
+          "category": "Combo Pack",
+          "tags": [
+            "best seller"
+          ]
+        }
+      },
+      {
+        "json": {
+          "brand": "Blue Tokai Coffee",
+          "name": "Vienna Roast",
+          "description": "Single origin medium dark roast from South India.",
+          "price": 450,
+          "currency": "INR",
+          "category": "Coffee Beans",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Araku",
+          "name": "Araku Emerald",
+          "description": "Tribal grown organic coffee from Araku valley.",
+          "price": 550,
+          "currency": "INR",
+          "category": "Coffee Beans",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Araku",
+          "name": "Araku Gold",
+          "description": "Premium single estate coffee, light roast.",
+          "price": 750,
+          "currency": "INR",
+          "category": "Coffee Beans",
+          "tags": []
+        }
+      },
+      {
+        "json": {
+          "brand": "Araku",
+          "name": "Araku Instant",
+          "description": "100% pure coffee, no chicory.",
+          "price": 320,
+          "currency": "INR",
+          "category": "Instant Coffee",
+          "tags": []
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Weekly Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Competitor Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Competitor Links": {
+      "main": [
+        [
+          {
+            "node": "One Competitor at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Email Digest": {
+      "main": [
+        [
+          {
+            "node": "Send Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Alert Email": {
+      "main": [
+        [
+          {
+            "node": "All Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Products": {
+      "main": [
+        [
+          {
+            "node": "Read Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Changes Found?": {
+      "main": [
+        [
+          {
+            "node": "Flatten for Sheet Write",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Changes Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten for Sheet Write": {
+      "main": [
+        [
+          {
+            "node": "Update Catalogue Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Catalogue Sheet": {
+      "main": [
+        [
+          {
+            "node": "Next Competitor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Next Competitor": {
+      "main": [
+        [
+          {
+            "node": "One Competitor at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Competitor at a Time": {
+      "main": [
+        [
+          {
+            "node": "Build Email Digest",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Scraping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Changes Skip": {
+      "main": [
+        [
+          {
+            "node": "One Competitor at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scraping": {
+      "main": [
+        [
+          {
+            "node": "Striping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Striping": {
+      "main": [
+        [
+          {
+            "node": "Extract Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Products": {
+      "main": [
+        [
+          {
+            "node": "Parse Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Summary": {
+      "main": [
+        [
+          {
+            "node": "Detect Changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Changes": {
+      "main": [
+        [
+          {
+            "node": "Any Changes Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "versionId": "1cfd7c72-8048-494d-8948-b1a56518734b",
+  "meta": {
+    "aiBuilderAssisted": true,
+    "instanceId": "20dd2d0d8018217dbd165d841d4c440719c8e1a971c716ad7532a041cf2470f8"
+  },
+  "id": "85fhIj97W8TowPNB",
+  "tags": []
+}
