@@ -1,0 +1,3 @@
+Extract ALL products from the text. Return ONLY valid JSON no markdown.
+Format: {"products":[{"name":"string","description":"string","price":0,"category":"string","tags":[]}]}
+Rules: price=number or null, tags=array, no hallucination.
