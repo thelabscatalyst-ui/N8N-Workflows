@@ -16,8 +16,8 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -1072,
-        256
+        -1856,
+        288
       ]
     },
     {
@@ -39,8 +39,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -896,
-        256
+        -1664,
+        288
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -52,20 +52,20 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const d = $input.item.json;\nconst s = d.summary;\nlet h = '<h2 style=\"font-family:sans-serif\">Competitor Intelligence: ' + d.brand + '</h2>';\nh += '<p style=\"font-family:sans-serif\">Run: ' + new Date().toLocaleDateString('en-IN') + '</p>';\nh += '<table style=\"border-collapse:collapse;width:100%;font-family:sans-serif;font-size:14px\">';\nh += '<tr style=\"background:#f0f0f0\"><th style=\"padding:8px;border:1px solid #ddd\">Metric</th><th style=\"padding:8px;border:1px solid #ddd\">Count</th></tr>';\nh += '<tr><td style=\"padding:8px;border:1px solid #ddd\">New Products</td><td style=\"padding:8px;border:1px solid #ddd;text-align:center\">' + s.new_count + '</td></tr>';\nh += '<tr><td style=\"padding:8px;border:1px solid #ddd\">Price Changes</td><td style=\"padding:8px;border:1px solid #ddd;text-align:center\">' + s.updated_count + '</td></tr>';\nh += '<tr><td style=\"padding:8px;border:1px solid #ddd\">Removed</td><td style=\"padding:8px;border:1px solid #ddd;text-align:center\">' + s.removed_count + '</td></tr>';\nh += '</table>';\nif (d.new_products?.length) {\n  h += '<h3 style=\"color:#2e7d32;font-family:sans-serif\">New Products</h3><ul style=\"font-family:sans-serif\">';\n  for (const p of d.new_products) {\n    h += '<li><b>' + p.name + '</b> Rs.' + (p.price||'N/A');\n    if (p.mrp) h += ' <span style=\"text-decoration:line-through;color:#999\">Rs.' + p.mrp + '</span>';\n    h += ' [' + (p.category||'') + ']</li>';\n  }\n  h += '</ul>';\n}\nif (d.updated_products?.length) {\n  h += '<h3 style=\"color:#e65100;font-family:sans-serif\">Price / Detail Changes</h3><ul style=\"font-family:sans-serif\">';\n  for (const p of d.updated_products) {\n    const up = parseFloat(p.price_delta) > 0;\n    const col = up ? '#c62828' : '#2e7d32';\n    h += '<li><b>' + p.name + '</b>: Rs.' + p.old_price + ' to <span style=\"color:' + col + '\">Rs.' + p.price + '</span>';\n    if (Math.abs(parseFloat(p.price_delta)) > 0) h += ' (' + (up ? '+' : '') + p.price_delta + ')';\n    if (p.mrp) h += ' | MRP Rs.' + p.mrp;\n    h += '</li>';\n  }\n  h += '</ul>';\n}\nif (d.removed_products?.length) {\n  h += '<h3 style=\"color:#888;font-family:sans-serif\">Removed</h3><ul style=\"font-family:sans-serif\">';\n  for (const n of d.removed_products) h += '<li>' + n + '</li>';\n  h += '</ul>';\n}\nh += '<p style=\"font-family:sans-serif\"><a href=\"https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA\">Open Catalogue Sheet</a></p>';\nreturn [{ json: { brand: d.brand, html: h, subject: 'Competitor Alert: ' + d.brand + ' (' + s.new_count + ' new, ' + s.updated_count + ' changed, ' + s.removed_count + ' removed)' } }];"
+        "jsCode": "const d = $input.item.json;\nconst s = d.summary || {}; // prevent undefined errors\n\nlet h = `<h2 style=\"font-family:sans-serif\">\n  Competitor Intelligence: ${d.brand || 'Unknown'}\n</h2>`;\n\nh += `<p style=\"font-family:sans-serif\">\n  Run: ${new Date().toLocaleDateString('en-IN')}\n</p>`;\n\nh += `<table style=\"border-collapse:collapse;width:100%;font-family:sans-serif;font-size:14px;\">\n  <tr style=\"background:#f0f0f0\">\n    <th style=\"padding:8px;border:1px solid #ddd\">Metric</th>\n    <th style=\"padding:8px;border:1px solid #ddd\">Count</th>\n  </tr>\n  <tr>\n    <td style=\"padding:8px;border:1px solid #ddd\">New Products</td>\n    <td style=\"padding:8px;border:1px solid #ddd;text-align:center\">${s.new_count || 0}</td>\n  </tr>\n  <tr>\n    <td style=\"padding:8px;border:1px solid #ddd\">Price Changes</td>\n    <td style=\"padding:8px;border:1px solid #ddd;text-align:center\">${s.updated_count || 0}</td>\n  </tr>\n  <tr>\n    <td style=\"padding:8px;border:1px solid #ddd\">Removed</td>\n    <td style=\"padding:8px;border:1px solid #ddd;text-align:center\">${s.removed_count || 0}</td>\n  </tr>\n</table>`;\n"
       },
       "id": "f402e256-abc5-4ae8-92a9-eec3aec96b1c",
       "name": "Build Email Digest",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -432,
-        416
+        -1008,
+        96
       ]
     },
     {
       "parameters": {
-        "sendTo": "your-email@gmail.com",
+        "sendTo": "thelabscatalyst@gmail.com",
         "subject": "={{ $json.subject }}",
         "message": "={{ $json.html }}",
         "options": {
@@ -77,10 +77,16 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        -240,
-        416
+        -816,
+        96
       ],
-      "webhookId": "882aa617-3cba-4201-91c2-37ddbf86a5fd"
+      "webhookId": "882aa617-3cba-4201-91c2-37ddbf86a5fd",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "28ZFVbmeELASWa67",
+          "name": "Gmail OAuth2 API"
+        }
+      }
     },
     {
       "parameters": {},
@@ -89,8 +95,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -48,
-        416
+        -624,
+        96
       ]
     },
     {
@@ -103,21 +109,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        -352,
-        144
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// ── MARKDOWN CLEANER — trim tail junk, preserve product content ─────────────\nconst md = $input.item.json.markdown || '';\nlet brand = '';\nlet sheetTab = '';\n\ntry {\n  brand = $('Map Brand Fields').item.json.brand || '';\n  sheetTab = $('Map Brand Fields').item.json.sheet_tab || '';\n} catch (error) {\n  console.error('Error accessing Map Brand Fields:', error);\n}\n\n// Step 1: Split into lines for targeted removal\nlet lines = md.split('\\n');\n\n// Step 2: Detect where \"junk zone\" starts — common footer/noise signals\nconst JUNK_SIGNALS = [\n  /^#+\\s*(footer|legal|privacy|terms|cookie|newsletter|subscribe|follow us|social|contact us|copyright|sitemap|faq|help center|returns|shipping policy|about us|careers|press)/i,\n  /^#+\\s*(you may also (like|love)|related products|recently viewed|recommended|trending|bestsellers outside)/i,\n  /^\\*{0,2}(©|copyright|\\(c\\))\\s*\\d{4}/i,\n  /^(all rights reserved|privacy policy|terms of (use|service)|refund policy)/i,\n];\n\nlet cutLine = lines.length; // default: keep everything\n\nfor (let i = 0; i < lines.length; i++) {\n  const line = lines[i].trim();\n  if (JUNK_SIGNALS.some(rx => rx.test(line))) {\n    // Only cut if we're past the first 30% of the document\n    // (avoids cutting real content that happens to match early)\n    if (i > lines.length * 0.3) {\n      cutLine = i;\n      break;\n    }\n  }\n}\n\nlines = lines.slice(0, cutLine);\n\n// Step 3: Remove nav link dumps — lines that are just a pile of [text](url) with no product info\n// A \"link dump\" = 5+ consecutive lines that are only markdown links, no prices, no descriptions\nlet cleaned = [];\nlet linkRunCount = 0;\nconst LINK_ONLY_LINE = /^\\s*[-*]?\\s*\\[.+?\\]\\(.+?\\)\\s*$/;\nconst HAS_PRICE = /₹|Rs\\.?|INR|\\d{3,}/;\n\nfor (const line of lines) {\n  if (LINK_ONLY_LINE.test(line) && !HAS_PRICE.test(line)) {\n    linkRunCount++;\n    if (linkRunCount <= 4) cleaned.push(line); // keep first few, drop the rest of a long run\n  } else {\n    linkRunCount = 0;\n    cleaned.push(line);\n  }\n}\n\n// Step 4: Collapse 3+ consecutive blank lines into 1\nlet result = cleaned.join('\\n').replace(/\\n{3,}/g, '\\n\\n').trim();\n\n// Step 5: Safety net — only if still huge (>40K chars), hard cut at last product-looking line\nif (result.length > 40000) {\n  const PRICE_LINE = /₹|Rs\\.?|INR|\\d{3,}/;\n  const resultLines = result.split('\\n');\n  let lastProductLine = 15000; // fallback\n  for (let i = resultLines.length - 1; i >= 0; i--) {\n    if (PRICE_LINE.test(resultLines[i])) {\n      lastProductLine = i + 5; // keep a few lines of context after last price\n      break;\n    }\n  }\n  result = resultLines.slice(0, lastProductLine).join('\\n').trim();\n}\n\nreturn {\n  json: {\n    brand,\n    sheet_tab: sheetTab,\n    cleaned_markdown: result,\n    original_chars: md.length,\n    cleaned_chars: result.length,\n    reduction_pct: Math.round((1 - result.length / md.length) * 100)\n  }\n};"
-      },
-      "id": "5fd2b4d1-9151-4bc8-bdac-95e70ca517e2",
-      "name": "Striping",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -528,
-        -80
+        -864,
+        512
       ]
     },
     {
@@ -153,8 +146,8 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [
-        -16,
-        144
+        -544,
+        512
       ],
       "credentials": {
         "openAiApi": {
@@ -165,15 +158,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// output is an ARRAY - so we need output[0], not just output\nconst item = $input.first().json;\n\nconst products = item.output[0].content[0].text.results;\n\nreturn products.map(product => ({\n  json: {\n    name: product.name,\n    price: product.price,\n    category: product.category,\n    tags: Array.isArray(product.tags) ? product.tags.join(', ') : product.tags\n  }\n}));"
+        "jsCode": "// output is an ARRAY - so we need output[0], not just output\nconst item = $input.first().json;\n\nconst products = item.output[0].content[0].text.products;\n\nreturn products.map(product => ({\n  json: {\n    name: product.name,\n    price: product.price,\n    category: product.category,\n    tags: Array.isArray(product.tags) ? product.tags.join(', ') : product.tags\n  }\n}));"
       },
       "id": "4a889f50-2490-49f7-baa5-6b51f8b97ff0",
       "name": "Parse Products",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        288,
-        208
+        -48,
+        240
       ]
     },
     {
@@ -197,8 +190,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        464,
-        208
+        112,
+        240
       ],
       "executeOnce": true,
       "credentials": {
@@ -217,8 +210,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        640,
-        208
+        288,
+        240
       ]
     },
     {
@@ -235,10 +228,9 @@
               "leftValue": "={{ $json.change_type }}",
               "operator": {
                 "type": "string",
-                "operation": "exists",
-                "singleValue": true
+                "operation": "notEquals"
               },
-              "rightValue": "",
+              "rightValue": "NO_CHANGE",
               "id": "4fe028b2-a447-46f6-ba51-f2129336ff30"
             }
           ],
@@ -251,22 +243,22 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        816,
-        208
+        480,
+        240
       ]
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Each item coming in is already flat from Detect Changes\n// We just need to clean and structure it for Google Sheets\nconst item = $input.item.json;\n\nreturn {\n  json: {\n    name: item.name,\n    price: item.price,\n    category: item.category,\n    tags: item.tags,\n    change_type: item.change_type,        // NEW or UPDATED\n    old_price: item.old_price || '',      // empty string if no change\n    old_tags: item.old_tags || '',        // empty string if no change\n    scraped_at: new Date().toISOString().split('T')[0]  // today's date\n  }\n};\n"
+        "jsCode": "// Each item coming in is already flat from Detect Changes\n// We just need to clean and structure it for Google Sheets\nconst item = $input.item.json;\n\nreturn {\n  json: {\n    name: item.name,\n    price: item.price,\n    category: item.category,\n    tags: item.tags,\n    change_type: item.change_type,        // NEW or UPDATED\n    old_price: item.old_price || '',      // empty string if no change\n    old_tags: item.old_tags || '',        // empty string if no change\n  }\n};\n"
       },
       "id": "957d07a8-7675-477e-93e5-4bb28da43289",
       "name": "Flatten for Sheet Write",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        288,
-        432
+        864,
+        0
       ]
     },
     {
@@ -287,7 +279,9 @@
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {},
-          "matchingColumns": [],
+          "matchingColumns": [
+            "name"
+          ],
           "schema": [
             {
               "id": "name",
@@ -296,29 +290,22 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
-              "id": "description",
-              "displayName": "description",
+              "id": "old_price",
+              "displayName": "old_price",
               "required": false,
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "price",
               "displayName": "price",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "curruncy",
-              "displayName": "curruncy",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -333,6 +320,26 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true
+            },
+            {
+              "id": "change_type",
+              "displayName": "change_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "old_tags",
+              "displayName": "old_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
             },
             {
               "id": "tags",
@@ -354,8 +361,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        496,
-        432
+        1136,
+        96
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -371,8 +378,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        672,
-        432
+        1312,
+        384
       ]
     },
     {
@@ -382,8 +389,8 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        992,
-        224
+        1136,
+        384
       ]
     },
     {
@@ -395,9 +402,149 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -704,
-        256
+        -1456,
+        288
       ]
+    },
+    {
+      "parameters": {
+        "html": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        512
+      ],
+      "id": "b4b4a966-4f07-45e6-857e-6adaf7b9dde6",
+      "name": "Markdown"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA",
+          "mode": "list",
+          "cachedResultName": "Competitor's Catalogue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Brand and URL').first().json.brand }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "name"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "old_price",
+              "displayName": "old_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "change_type",
+              "displayName": "change_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "old_tags",
+              "displayName": "old_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "tags",
+              "displayName": "tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "bbec7507-f9e0-4b42-82ba-58e9977cdc8f",
+      "name": "Flag on - Testing",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        -112
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vL7UpKlt0R3kfrKx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Extracting Station:-\nSetting the brand variables, and extracting the raw HTML from the competitor links which are fetched from the \"competitors links\" sheet, the content is then converted into clear markdown reducing the input context size by 10x, saving tons of credits, OpenAI node extracts all the products efficiently.\n",
+        "height": 320,
+        "width": 784,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1056,
+        384
+      ],
+      "typeVersion": 1,
+      "id": "a69556d4-26c6-4580-af29-7dd8c3aac2bd",
+      "name": "Sticky Note"
     },
     {
       "parameters": {
@@ -424,38 +571,89 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -512,
-        144
+        -1024,
+        512
       ]
     },
     {
       "parameters": {
-        "html": "={{ $json.data }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.markdown",
-      "typeVersion": 1,
-      "position": [
-        -192,
-        144
-      ],
-      "id": "b4b4a966-4f07-45e6-857e-6adaf7b9dde6",
-      "name": "Markdown"
-    },
-    {
-      "parameters": {
-        "content": "### use it later",
-        "height": 192,
-        "width": 256
+        "content": "## CRON - Starting and fetching operations:-\n\nThis section has a cron node - runs daily (adjust accordingly) - fetches all the links from the list one by one and starts a loop until one item operation gets completed",
+        "height": 272,
+        "width": 640,
+        "color": 2
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -560,
-        -128
+        -1920,
+        176
       ],
       "typeVersion": 1,
-      "id": "f356fabe-121b-4ea8-bb68-51c22b50d6e3",
-      "name": "Sticky Note"
+      "id": "15254722-19c5-412f-8b23-c334c81b67d7",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Updating Section:-\n\nHere the data is analyzed and customized email is generated based upon the changes done during the operation and emailed to the team with formatting, we can also add a slack node, if company uses salck messaging",
+        "height": 304,
+        "width": 640,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1056,
+        -32
+      ],
+      "typeVersion": 1,
+      "id": "5a497920-93be-4232-9dae-7c33a72282ca",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Product Handling & Decision Section:-\n\nThis station separates all the products present in one link, code node differentiates which product is changed after reading the currunt catalogue sheet, and if statement executes based upon the output.",
+        "height": 304,
+        "width": 736,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "835e018f-a1a5-4c1f-86c2-c29ddb219ab8",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Updating Section:-\n\nIf there are any changes found, then they are replaced in that brands catalogue sheet. BOOM",
+        "height": 464,
+        "width": 528,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        800,
+        -208
+      ],
+      "typeVersion": 1,
+      "id": "6bc36959-1668-4dac-873d-288f79404819",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Looping:-",
+        "height": 192,
+        "width": 400,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "d553dc11-e62c-4276-aa87-9866539ede00",
+      "name": "Sticky Note5"
     }
   ],
   "pinData": {
@@ -484,7 +682,7 @@
         "json": {
           "output": [
             {
-              "id": "msg_01d01e16d38ffcea0069df53d1b2408196928ff6e9c3f880d8",
+              "id": "msg_0af9a4112d1f91260069e255a895648198a90852230977a79f",
               "type": "message",
               "status": "completed",
               "content": [
@@ -493,7 +691,7 @@
                   "annotations": [],
                   "logprobs": [],
                   "text": {
-                    "results": [
+                    "products": [
                       {
                         "name": "Enamel Mug",
                         "price": 564,
@@ -515,8 +713,8 @@
                         "price": 999,
                         "category": "merchandise",
                         "tags": [
-                          "sale",
-                          "sold out"
+                          "sold out",
+                          "sale"
                         ]
                       },
                       {
@@ -596,7 +794,7 @@
                         "price": 1099,
                         "category": "instant coffee",
                         "tags": [
-                          "sale"
+                          "sold out"
                         ]
                       },
                       {
@@ -620,7 +818,7 @@
                         "price": 399,
                         "category": "instant coffee",
                         "tags": [
-                          "sale"
+                          "sold out"
                         ]
                       },
                       {
@@ -700,7 +898,7 @@
                         "price": 749,
                         "category": "instant coffee",
                         "tags": [
-                          "sale"
+                          "sold out"
                         ]
                       }
                     ]
@@ -744,7 +942,7 @@
           "name": "Tumbler",
           "price": 999,
           "category": "merchandise",
-          "tags": "sale, sold out"
+          "tags": "sold out, sale"
         },
         "pairedItem": {
           "item": 0
@@ -854,7 +1052,7 @@
           "name": "Instant Coffee Assorted Pack of 96",
           "price": 1099,
           "category": "instant coffee",
-          "tags": "sale"
+          "tags": "sold out"
         },
         "pairedItem": {
           "item": 0
@@ -887,7 +1085,7 @@
           "name": "Xpresso, Strong Blend Instant Coffee",
           "price": 399,
           "category": "instant coffee",
-          "tags": "sale"
+          "tags": "sold out"
         },
         "pairedItem": {
           "item": 0
@@ -997,6 +1195,293 @@
           "name": "Xpresso, Strong Blend Instant Coffee Pack of 2",
           "price": 749,
           "category": "instant coffee",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Read Summary": [
+      {
+        "json": {
+          "row_number": 2,
+          "name": "Enamel Mug",
+          "old_price": "",
+          "price": 564,
+          "category": "merchandise",
+          "change_type": "NO_CHANGE",
+          "old_tags": "sale",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 3,
+          "name": "Green Ceramic Mug",
+          "old_price": "",
+          "price": 499,
+          "category": "merchandise",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 4,
+          "name": "Tumbler",
+          "old_price": "",
+          "price": 999,
+          "category": "merchandise",
+          "change_type": "UPDATED",
+          "old_tags": "sale, sold out",
+          "tags": "sold out, sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 5,
+          "name": "Dark Roast Hot Brew Coffee Bags",
+          "old_price": "",
+          "price": 399,
+          "category": "hot brew",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 6,
+          "name": "Instant Coffee Combo",
+          "old_price": "",
+          "price": 1299,
+          "category": "combo",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 7,
+          "name": "Frothy Instant Combo - Original",
+          "old_price": "",
+          "price": 1799,
+          "category": "combo",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 8,
+          "name": "Dark Roast Instant Coffee",
+          "old_price": "",
+          "price": 699,
+          "category": "instant coffee",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 9,
+          "name": "Hazelnut Instant Coffee",
+          "old_price": "",
+          "price": 599,
+          "category": "instant coffee",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 10,
+          "name": "French Vanilla Instant Coffee",
+          "old_price": "",
+          "price": 599,
+          "category": "instant coffee",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 11,
+          "name": "Original Instant Coffee",
+          "old_price": "",
+          "price": 599,
+          "category": "instant coffee",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 12,
+          "name": "Instant Coffee Combo Pack",
+          "old_price": "",
+          "price": 1649,
+          "category": "instant coffee",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 13,
+          "name": "Instant Coffee Sachets + Travel Mug",
+          "old_price": "",
+          "price": 1625,
+          "category": "combo",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 14,
+          "name": "Instant Coffee Assorted Pack of 96",
+          "old_price": "",
+          "price": 1099,
+          "category": "instant coffee",
+          "change_type": "UPDATED",
+          "old_tags": "sale",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 15,
+          "name": "Instant Coffee Sachets + Tumbler",
+          "old_price": "",
+          "price": 1276,
+          "category": "combo",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 16,
+          "name": "Filter Instant Coffee",
+          "old_price": "",
+          "price": 349,
+          "category": "instant coffee",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sale"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 17,
+          "name": "Xpresso, Strong Blend Instant Coffee",
+          "old_price": "",
+          "price": 399,
+          "category": "instant coffee",
+          "change_type": "UPDATED",
+          "old_tags": "sale",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 18,
+          "name": "Travel Mug + Frother + Free Coffee",
+          "old_price": "",
+          "price": 2979,
+          "category": "combo",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 19,
+          "name": "Frothy Instant Combo - French Vanilla",
+          "old_price": "",
+          "price": 1699,
+          "category": "combo",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
+          "tags": "sold out"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "row_number": 20,
+          "name": "50 Sachets + FREE MUG",
+          "old_price": "",
+          "price": 599,
+          "category": "gift pack",
+          "change_type": "NO_CHANGE",
+          "old_tags": "",
           "tags": "sale"
         },
         "pairedItem": {
@@ -1004,277 +1489,86 @@
         }
       }
     ],
-    "Flatten for Sheet Write": [
+    "Detect Changes": [
       {
         "json": {
-          "name": "Enamel Mug",
-          "price": 564,
-          "category": "merchandise",
-          "tags": "sold out",
-          "change_type": "UPDATED",
-          "old_price": 800,
-          "old_tags": "sale",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      },
-      {
-        "json": {
-          "name": "Tumbler",
-          "price": 999,
-          "category": "merchandise",
-          "tags": "sale, sold out",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 1
-        }
-      },
-      {
-        "json": {
-          "name": "Dark Roast Hot Brew Coffee Bags",
-          "price": 399,
-          "category": "hot brew",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 2
-        }
-      },
-      {
-        "json": {
-          "name": "Instant Coffee Combo",
+          "name": "Coffee Frother + Free Coffee",
           "price": 1299,
           "category": "combo",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 3
-        }
-      },
-      {
-        "json": {
-          "name": "Frothy Instant Combo - Original",
-          "price": 1799,
-          "category": "combo",
           "tags": "sold out",
           "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 4
+          "old_price": null,
+          "old_tags": null
         }
       },
       {
         "json": {
-          "name": "Dark Roast Instant Coffee",
-          "price": 699,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 5
-        }
-      },
-      {
-        "json": {
-          "name": "Hazelnut Instant Coffee",
+          "name": "Instant Coffee Assorted Pack of 48",
           "price": 599,
           "category": "instant coffee",
           "tags": "sale",
           "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 6
+          "old_price": null,
+          "old_tags": null
         }
       },
       {
         "json": {
-          "name": "French Vanilla Instant Coffee",
-          "price": 599,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 7
-        }
-      },
-      {
-        "json": {
-          "name": "Original Instant Coffee",
-          "price": 599,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 8
-        }
-      },
-      {
-        "json": {
-          "name": "Instant Coffee Combo Pack",
-          "price": 1649,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 9
-        }
-      },
-      {
-        "json": {
-          "name": "Instant Coffee Sachets + Travel Mug",
-          "price": 1625,
-          "category": "combo",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 10
-        }
-      },
-      {
-        "json": {
-          "name": "Instant Coffee Assorted Pack of 96",
-          "price": 1099,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 11
-        }
-      },
-      {
-        "json": {
-          "name": "Instant Coffee Sachets + Tumbler",
-          "price": 1276,
-          "category": "combo",
-          "tags": "sold out",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 12
-        }
-      },
-      {
-        "json": {
-          "name": "Filter Instant Coffee",
-          "price": 349,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 13
-        }
-      },
-      {
-        "json": {
-          "name": "Xpresso, Strong Blend Instant Coffee",
-          "price": 399,
-          "category": "instant coffee",
-          "tags": "sale",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 14
-        }
-      },
-      {
-        "json": {
-          "name": "Travel Mug + Frother + Free Coffee",
-          "price": 2979,
-          "category": "combo",
-          "tags": "sold out",
-          "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 15
-        }
-      },
-      {
-        "json": {
-          "name": "Frothy Instant Combo - French Vanilla",
+          "name": "Frothy Instant Combo - Hazelnut",
           "price": 1699,
           "category": "combo",
-          "tags": "sold out",
+          "tags": "sale",
           "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 16
+          "old_price": null,
+          "old_tags": null
         }
       },
       {
         "json": {
-          "name": "50 Sachets + FREE MUG",
-          "price": 599,
-          "category": "gift pack",
+          "name": "The Ground Coffee Mug Combo",
+          "price": 849,
+          "category": "merchandise",
           "tags": "sale",
           "change_type": "NEW",
-          "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
-        },
-        "pairedItem": {
-          "item": 17
+          "old_price": null,
+          "old_tags": null
         }
       },
+      {
+        "json": {
+          "name": "Enamel Mug + Free Pack of 10 Instant",
+          "price": 659,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": null,
+          "old_tags": null
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug Combo + Free Coffee",
+          "price": 1535,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": null,
+          "old_tags": null
+        }
+      },
+      {
+        "json": {
+          "name": "Xpresso, Strong Blend Instant Coffee Pack of 2",
+          "price": 749,
+          "category": "instant coffee",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": null,
+          "old_tags": null
+        }
+      }
+    ],
+    "Flatten for Sheet Write": [
       {
         "json": {
           "name": "Coffee Frother + Free Coffee",
@@ -1283,11 +1577,10 @@
           "tags": "sold out",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 18
+          "item": 0
         }
       },
       {
@@ -1298,11 +1591,10 @@
           "tags": "sale",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 19
+          "item": 1
         }
       },
       {
@@ -1313,11 +1605,10 @@
           "tags": "sale",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 20
+          "item": 2
         }
       },
       {
@@ -1328,11 +1619,10 @@
           "tags": "sale",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 21
+          "item": 3
         }
       },
       {
@@ -1343,11 +1633,10 @@
           "tags": "sold out",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 22
+          "item": 4
         }
       },
       {
@@ -1358,11 +1647,10 @@
           "tags": "sold out",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 23
+          "item": 5
         }
       },
       {
@@ -1370,14 +1658,313 @@
           "name": "Xpresso, Strong Blend Instant Coffee Pack of 2",
           "price": 749,
           "category": "instant coffee",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 6
+        }
+      }
+    ],
+    "Update Catalogue Sheet": [
+      {
+        "json": {
+          "name": "Coffee Frother + Free Coffee",
+          "price": 1299,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "name": "Instant Coffee Assorted Pack of 48",
+          "price": 599,
+          "category": "instant coffee",
           "tags": "sale",
           "change_type": "NEW",
           "old_price": "",
-          "old_tags": "",
-          "scraped_at": "2026-04-17"
+          "old_tags": ""
         },
         "pairedItem": {
-          "item": 24
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Frothy Instant Combo - Hazelnut",
+          "price": 1699,
+          "category": "combo",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      },
+      {
+        "json": {
+          "name": "The Ground Coffee Mug Combo",
+          "price": 849,
+          "category": "merchandise",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 3
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug + Free Pack of 10 Instant",
+          "price": 659,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 4
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug Combo + Free Coffee",
+          "price": 1535,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 5
+        }
+      },
+      {
+        "json": {
+          "name": "Xpresso, Strong Blend Instant Coffee Pack of 2",
+          "price": 749,
+          "category": "instant coffee",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 6
+        }
+      }
+    ],
+    "Flag on - Testing": [
+      {
+        "json": {
+          "name": "Coffee Frother + Free Coffee",
+          "price": 1299,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "name": "Instant Coffee Assorted Pack of 48",
+          "price": 599,
+          "category": "instant coffee",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Frothy Instant Combo - Hazelnut",
+          "price": 1699,
+          "category": "combo",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      },
+      {
+        "json": {
+          "name": "The Ground Coffee Mug Combo",
+          "price": 849,
+          "category": "merchandise",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 3
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug + Free Pack of 10 Instant",
+          "price": 659,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 4
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug Combo + Free Coffee",
+          "price": 1535,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 5
+        }
+      },
+      {
+        "json": {
+          "name": "Xpresso, Strong Blend Instant Coffee Pack of 2",
+          "price": 749,
+          "category": "instant coffee",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 6
+        }
+      }
+    ],
+    "Next Competitor": [
+      {
+        "json": {
+          "name": "Coffee Frother + Free Coffee",
+          "price": 1299,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "name": "Instant Coffee Assorted Pack of 48",
+          "price": 599,
+          "category": "instant coffee",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Frothy Instant Combo - Hazelnut",
+          "price": 1699,
+          "category": "combo",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 2
+        }
+      },
+      {
+        "json": {
+          "name": "The Ground Coffee Mug Combo",
+          "price": 849,
+          "category": "merchandise",
+          "tags": "sale",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 3
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug + Free Pack of 10 Instant",
+          "price": 659,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 4
+        }
+      },
+      {
+        "json": {
+          "name": "Enamel Mug Combo + Free Coffee",
+          "price": 1535,
+          "category": "combo",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 5
+        }
+      },
+      {
+        "json": {
+          "name": "Xpresso, Strong Blend Instant Coffee Pack of 2",
+          "price": 749,
+          "category": "instant coffee",
+          "tags": "sold out",
+          "change_type": "NEW",
+          "old_price": "",
+          "old_tags": ""
+        },
+        "pairedItem": {
+          "item": 6
         }
       }
     ]
@@ -1436,11 +2023,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Striping": {
-      "main": [
-        []
       ]
     },
     "Extract Products": {
@@ -1512,6 +2094,11 @@
             "node": "Update Catalogue Sheet",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Flag on - Testing",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -1567,22 +2154,22 @@
         ]
       ]
     },
-    "Brand and URL": {
+    "Markdown": {
       "main": [
         [
           {
-            "node": "Scraping",
+            "node": "Extract Products",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Markdown": {
+    "Brand and URL": {
       "main": [
         [
           {
-            "node": "Extract Products",
+            "node": "Scraping",
             "type": "main",
             "index": 0
           }
@@ -1595,8 +2182,9 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "56a45542-e732-40a4-9a05-1df8b4ce8540",
+  "versionId": "76df5975-8d79-46a6-999e-89e76f933846",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "116a404514e7383db134d2f1f7f421aa533d0a56f50e82bddb90491c89a4f919"
   },
   "id": "0OejVndqUKsM0BfZ",
