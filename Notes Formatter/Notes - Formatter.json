@@ -1,90 +1,125 @@
 {
-  "name": "Notes Organiser",
+  "name": "Notes Formatter",
   "nodes": [
     {
       "parameters": {
-        "operation": "get",
-        "documentURL": "https://docs.google.com/document/d/1l3k_JlLbuHaC88abmWBURFEwaC_89kSWVDEeGaxwGFo/edit?tab=t.0"
+        "content": "## Setup Required\n1. Upload to Google Drive node: Replace YOUR_DRIVE_FOLDER_ID\n2. Create Notion Page node: Replace YOUR_NOTION_DATABASE_ID\n   Notion DB needs these properties: Summary (text), Subject (select), Date (date), Key Terms (text)\n3. Both email nodes: Replace YOUR_EMAIL@gmail.com\n4. Reconnect credentials: Google Docs, Google Drive, Anthropic, Notion, Gmail",
+        "height": 220,
+        "width": 560,
+        "color": 3
       },
+      "id": "5b306b64-e91e-4ed9-8f1f-af137ba81a33",
+      "name": "Sticky Note 34cedc3c",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Flow\nWeekly or Manual Trigger -> Fetch Google Doc -> Format to HTML (Claude) -> Extract Metadata (Claude) -> Parse & Assemble -> Upload to Drive + Create Notion Page -> Success Email\nOn Drive or Notion error -> Build Error Report -> Error Email",
+        "height": 140,
+        "width": 560,
+        "color": 5
+      },
+      "id": "d34e2591-b197-45f1-ac1b-40aa8c1bb459",
+      "name": "Sticky Note 1053711e",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks"
+            }
+          ]
+        }
+      },
+      "id": "8ff3b626-9afa-4f9e-a4ab-1c24a9b44290",
+      "name": "Weekly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "documentURL": "https://docs.google.com/document/d/11Mbz0IPrByyLlfK1oWNYnZ63umBNlYTbTcBuq-jCgdI/edit?tab=t.0"
+      },
+      "id": "af0f4c9a-46f5-48f6-bb14-62d885b5bc7b",
+      "name": "Fetch Raw Notes",
       "type": "n8n-nodes-base.googleDocs",
       "typeVersion": 2,
       "position": [
-        -160,
-        192
+        -192,
+        400
       ],
-      "id": "79a3e3b9-6f8e-44f1-9c27-123dff5a805c",
-      "name": "My Scribble Page",
       "credentials": {
         "googleDocsOAuth2Api": {
-          "id": "qxDJ99HPPXMAppHG",
+          "id": "8HZfws0HyEyVYyBp",
           "name": "Google Docs OAuth2 API"
         }
       }
     },
     {
+      "parameters": {},
+      "id": "fff38ff8-a933-4f07-a986-964de42bf47e",
+      "name": "Manual Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        496
+      ]
+    },
+    {
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "openai/gpt-oss-120b",
           "mode": "list",
-          "cachedResultName": "OPENAI/GPT-OSS-120B"
+          "value": "claude-sonnet-4-20250514"
         },
-        "responses": {
+        "messages": {
           "values": [
             {
-              "role": "system",
-              "content": "=# Role\nYou are an expert academic note organizer and document formatter. Your task is to transform raw, unstructured classroom notes into clean, structured, and highly readable HTML documents suitable for study and revision.\n\n# Input\nYou will receive raw notes that may include:\n- Grammar and spelling errors\n- Unstructured or scattered ideas\n- Missing or unclear headings\n- Mixed formatting and incomplete sentences\n\nBelow is provided raw data:\n{{ $json.content }}\n\n# Task\n- Correct grammar and spelling without altering the original meaning.\n- Organize the content into a logical hierarchy:\n  - Main topics as <h1>\n  - Subtopics as <h2>\n  - Supporting sections as <h3>\n- Group related ideas into clear paragraphs using <p>.\n- Convert lists into properly structured bullet points using <ul> and <li>.\n- Emphasize key terms using <strong> where appropriate.\n- Ensure clarity, readability, and logical flow throughout the document.\n- Do NOT add new information or external knowledge.\n- Keep the content concise and structured for effective revision.\n\n# Output Requirements\n- Format: Output ONLY valid HTML (no markdown, no JSON, no explanations).\n- Structure: Use semantic HTML5 elements including headings (<h1>, <h2>, <h3>), paragraphs (<p>), lists (<ul>, <li>).\n- Styling: Include a minimal inline <style> block for readability (font, spacing, line-height, basic hierarchy).\n- Layout: Wrap all content inside a single parent <div>.\n- Consistency: Ensure proper tag nesting and closing.\n- Strict Rule: Output must always be clean, complete, and renderable HTML."
-            },
-            {}
+              "content": "=Analyze these raw notes and return ONLY a valid JSON object (no markdown, no explanation) with exactly these fields:\n{\n  \"title\": \"concise topic title (max 60 chars)\",\n  \"key_terms\": [\"term1\", \"term2\", \"term3\"],\n  \"subject\": \"subject area (e.g. Biology, History, Marketing)\",\n  \"date\": \"{{ $now.toFormat(\"yyyy-MM-dd\") }}\"\n}\n\nRaw notes:\n{{ $(\"Fetch Raw Notes\").item.json.content }}"
+            }
           ]
         },
-        "builtInTools": {},
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 2.1,
+      "id": "3ae29d01-91ee-42b6-80fa-8e3c424b1acf",
+      "name": "Extract Metadata",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
       "position": [
-        64,
-        192
-      ],
-      "id": "a2264dac-0631-4b29-a34e-d61f91fbc551",
-      "name": "Magic Organiser",
-      "credentials": {
-        "openAiApi": {
-          "id": "HUpabexxp7sCfp9K",
-          "name": "Nvidia Credits"
-        }
-      }
+        320,
+        400
+      ]
     },
     {
       "parameters": {
-        "content": "## AI Block\nPrompted brain for organisation, completely formats the raw data and change it into styled HTML content for easy handling.",
-        "height": 144,
-        "width": 256
+        "jsCode": "const rawText = $input.item.json.output[0].content[0].text;\nconst cleaned = rawText.replace(/```json|```/g, \"\").trim();\nlet meta;\ntry {\n  meta = JSON.parse(cleaned);\n} catch(e) {\n  meta = { title: \"Untitled Notes\", summary: \"\", key_terms: [], subject: \"General\", date: new Date().toISOString().split(\"T\")[0] };\n}\nconst htmlContent = $(\"Format Notes to HTML\").item.json.output[0].content[0].text;\nconst fileName = meta.title + \" - \" + meta.date;\nreturn [{ json: { ...meta, htmlContent, fileName } }];"
       },
-      "type": "n8n-nodes-base.stickyNote",
+      "id": "09e898cb-d369-4ed0-9871-56fa2315bfb1",
+      "name": "Parse Metadata & Assemble",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        48,
-        320
-      ],
-      "typeVersion": 1,
-      "id": "e053a901-288d-4df7-9749-20699d9a862f",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "content": "## Scribble Page\nThis is the page where i would scribble my ideas or brainstorm it, and on manually pressing a button, the raw data is organised, we can schedule the timing too",
-        "height": 176,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -304,
-        368
-      ],
-      "typeVersion": 1,
-      "id": "c49af776-e942-4b09-9c12-1bd9d4ae2732",
-      "name": "Sticky Note1"
+        656,
+        400
+      ]
     },
     {
       "parameters": {
@@ -95,145 +130,135 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "multipart/related; boundary=foo_bar_baz",
-        "body": "=--foo_bar_baz\nContent-Type: application/json; charset=UTF-8\n\n{\n  \"name\": \"{{ $json['Document Name'] }}\",\n  \"mimeType\": \"application/vnd.google-apps.document\"\n}\n\n--foo_bar_baz\nContent-Type: text/html; charset=UTF-8\n\n{{ $json.output[0].content[0].text }}\n--foo_bar_baz--",
+        "body": "=--foo_bar_baz\nContent-Type: application/json; charset=UTF-8\n\n{\n  \"name\": \"{{ $json.fileName }}\",\n  \"mimeType\": \"application/vnd.google-apps.document\",\n  \"parents\": [\"YOUR_DRIVE_FOLDER_ID\"]\n}\n\n--foo_bar_baz\nContent-Type: text/html; charset=UTF-8\n\n{{ $json.htmlContent }}\n--foo_bar_baz--",
         "options": {}
       },
+      "id": "27aa8a7e-9bf6-4ca7-98c4-b27e673302b8",
+      "name": "Google Drive",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        544,
-        192
+        912,
+        400
       ],
-      "id": "92772488-a06d-4a18-89ef-6c3751df1435",
-      "name": "HTTP Request",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "nUiXIvywsYJDEeGo",
-          "name": "Google Drive OAuth2 API"
-        }
-      }
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
             {
-              "id": "5082f450-434b-40a2-95ab-bba3593b029c",
-              "name": "Document Name",
-              "value": "Organised Notes",
-              "type": "string"
-            },
-            {
-              "id": "e6a8cf00-d27e-4e5c-92f6-fcb2c1902575",
-              "name": "output[0].content[0].text",
-              "value": "={{ $json.output[0].content[0].text }}",
-              "type": "string"
+              "content": "=# Role\nYou are an expert academic note organizer and document formatter. Transform raw, unstructured notes into clean, structured, highly readable HTML documents suitable for study and revision.\n\nRaw data:\n{{ $json.content }}\n\n# Task\n- Correct grammar and spelling without altering meaning.\n- Organize into logical hierarchy: Main topics as <h1>, Subtopics as <h2>, Supporting sections as <h3>.\n- Group related ideas into clear paragraphs using <p>.\n- Convert lists into properly structured bullet points using <ul> and <li>.\n- Emphasize key terms using <strong>.\n- Do NOT add new information or external knowledge.\n\n# Output\n- Output ONLY valid HTML (no markdown, no JSON, no explanations).\n- Include a minimal inline <style> block.\n- Wrap all content in a single <div>.\n- Must be clean, complete, and renderable HTML."
             }
           ]
         },
+        "builtInTools": {},
         "options": {}
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
       "position": [
-        400,
-        192
+        0,
+        400
       ],
-      "id": "cc3fbc84-053c-47c3-8e5f-286a2f993203",
-      "name": "Set the fields"
-    },
-    {
-      "parameters": {
-        "content": "## Automatic Uploading\nThis block manages and upload the final content in the google drive as cleared notes.",
-        "width": 272,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        400,
-        352
-      ],
-      "typeVersion": 1,
-      "id": "90262115-2dea-4931-98fc-670e273a376c",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "content": "## NOTES ORGANISER AND FORMATTER\nThis is my N8N project, helping me in taking notes in thoery lectures without worrying any grammatical or logical error, formatting, proper flow, which saves a lot time.\n\n- fetches data from the docs\n- AI brain prompted to organise, correct and format raw data\n- convert it into HTML, with slight inline designing.\n- set fields and upload it into the drive, with markdown.",
-        "height": 224,
-        "width": 672,
-        "color": 7
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -144,
-        -48
-      ],
-      "typeVersion": 1,
-      "id": "69572dbd-51c6-4401-9af1-a3c33de88080",
-      "name": "Sticky Note3"
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "months",
-              "monthsInterval": 12
-            }
-          ]
+      "id": "1cf9533f-80ca-4924-a6ca-d8f7ae798b76",
+      "name": "Formatter",
+      "credentials": {
+        "openAiApi": {
+          "id": "AJUyEfipeY8dMHNc",
+          "name": "n8n free OpenAI API credits"
         }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
-      "position": [
-        -304,
-        192
-      ],
-      "id": "4414231d-d698-4a8e-8cb0-62e5d258ae18",
-      "name": "Schedule Trigger"
+      }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Google Drive": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
   "connections": {
-    "My Scribble Page": {
+    "Weekly Schedule": {
       "main": [
         [
           {
-            "node": "Magic Organiser",
+            "node": "Fetch Raw Notes",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Magic Organiser": {
+    "Fetch Raw Notes": {
       "main": [
         [
           {
-            "node": "Set the fields",
+            "node": "Formatter",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Set the fields": {
+    "Manual Run": {
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Fetch Raw Notes",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Schedule Trigger": {
+    "Extract Metadata": {
       "main": [
         [
           {
-            "node": "My Scribble Page",
+            "node": "Parse Metadata & Assemble",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Metadata & Assemble": {
+      "main": [
+        [
+          {
+            "node": "Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive": {
+      "main": [
+        []
+      ]
+    },
+    "Formatter": {
+      "main": [
+        [
+          {
+            "node": "Extract Metadata",
             "type": "main",
             "index": 0
           }
@@ -246,11 +271,10 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "01854c89-b2ab-45a3-a3cd-5fb59f34d977",
+  "versionId": "4ebca306-2823-4718-b641-ad051116c7ee",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "20dd2d0d8018217dbd165d841d4c440719c8e1a971c716ad7532a041cf2470f8"
+    "instanceId": "116a404514e7383db134d2f1f7f421aa533d0a56f50e82bddb90491c89a4f919"
   },
-  "id": "GZsuhHRJg9HaFJVz",
+  "id": "9dNzJ8ELMIyN6XRI",
   "tags": []
 }
