@@ -52,7 +52,7 @@ const runDate  = new Date().toLocaleDateString('en-IN', { dateStyle: 'full' });
 const total    = items.length;
 
 let html = '<div style="font-family:sans-serif;max-width:700px;margin:auto">';
-html += '<h2 style="color:#1a1a1a">Catalogue Intelligence: ' + brand + '</h2>';
+html += '<h2 style="color:#1a1a1a">Catalogue Intelligence: ' + $('Brand and URL').first().json.brand + '</h2>';
 html += '<p style="color:#555">Run date: ' + runDate + ' &nbsp;|&nbsp; <b>' + total + ' changes detected</b></p>';
 
 html += '<table style="border-collapse:collapse;width:100%;font-size:13px;margin-bottom:16px">';
