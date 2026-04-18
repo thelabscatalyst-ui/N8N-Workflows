@@ -3,38 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Setup Required\n1. Upload to Google Drive node: Replace YOUR_DRIVE_FOLDER_ID\n2. Create Notion Page node: Replace YOUR_NOTION_DATABASE_ID\n   Notion DB needs these properties: Summary (text), Subject (select), Date (date), Key Terms (text)\n3. Both email nodes: Replace YOUR_EMAIL@gmail.com\n4. Reconnect credentials: Google Docs, Google Drive, Anthropic, Notion, Gmail",
-        "height": 220,
-        "width": 560,
-        "color": 3
-      },
-      "id": "5b306b64-e91e-4ed9-8f1f-af137ba81a33",
-      "name": "Sticky Note 34cedc3c",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16,
-        112
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Flow\nWeekly or Manual Trigger -> Fetch Google Doc -> Format to HTML (Claude) -> Extract Metadata (Claude) -> Parse & Assemble -> Upload to Drive + Create Notion Page -> Success Email\nOn Drive or Notion error -> Build Error Report -> Error Email",
-        "height": 140,
-        "width": 560,
-        "color": 5
-      },
-      "id": "d34e2591-b197-45f1-ac1b-40aa8c1bb459",
-      "name": "Sticky Note 1053711e",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16,
-        640
-      ]
-    },
-    {
-      "parameters": {
         "rule": {
           "interval": [
             {
@@ -48,7 +16,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        -448,
+        -592,
         320
       ]
     },
@@ -62,7 +30,7 @@
       "type": "n8n-nodes-base.googleDocs",
       "typeVersion": 2,
       "position": [
-        -192,
+        -336,
         400
       ],
       "credentials": {
@@ -79,45 +47,20 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -448,
+        -592,
         496
       ]
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "claude-sonnet-4-20250514"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=Analyze these raw notes and return ONLY a valid JSON object (no markdown, no explanation) with exactly these fields:\n{\n  \"title\": \"concise topic title (max 60 chars)\",\n  \"key_terms\": [\"term1\", \"term2\", \"term3\"],\n  \"subject\": \"subject area (e.g. Biology, History, Marketing)\",\n  \"date\": \"{{ $now.toFormat(\"yyyy-MM-dd\") }}\"\n}\n\nRaw notes:\n{{ $(\"Fetch Raw Notes\").item.json.content }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "3ae29d01-91ee-42b6-80fa-8e3c424b1acf",
-      "name": "Extract Metadata",
-      "type": "@n8n/n8n-nodes-langchain.anthropic",
-      "typeVersion": 1,
-      "position": [
-        320,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "const rawText = $input.item.json.output[0].content[0].text;\nconst cleaned = rawText.replace(/```json|```/g, \"\").trim();\nlet meta;\ntry {\n  meta = JSON.parse(cleaned);\n} catch(e) {\n  meta = { title: \"Untitled Notes\", summary: \"\", key_terms: [], subject: \"General\", date: new Date().toISOString().split(\"T\")[0] };\n}\nconst htmlContent = $(\"Format Notes to HTML\").item.json.output[0].content[0].text;\nconst fileName = meta.title + \" - \" + meta.date;\nreturn [{ json: { ...meta, htmlContent, fileName } }];"
+        "jsCode": "// Correct path for Anthropic node output\nconst raw = $input.item.json.output[0].content[0].text;\n\n// Parse JSON safely\nlet meta;\ntry {\n  // Claude sometimes wraps JSON in backticks — strip them\n  const cleaned = raw.replace(/```json|```/g, '').trim();\n  meta = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error(\"Failed to parse metadata JSON: \" + raw);\n}\n\n// Correct path for Formatter node (also Anthropic) — same structure\nconst html = $('Formatter').item.json.output[0].content[0].text;\n\n// Build filename: YYYY-MM-DD_Subject_Title.html\nconst safeName = (str) => str.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);\nconst fileName = `${meta.date}_${safeName(meta.subject)}_${safeName(meta.title)}.html`;\n\nreturn [{\n  json: {\n    fileName,\n    subject: meta.subject,\n    title: meta.title,\n    summary: meta.summary,\n    date: meta.date,\n    htmlContent: html\n  }\n}];"
       },
       "id": "09e898cb-d369-4ed0-9871-56fa2315bfb1",
       "name": "Parse Metadata & Assemble",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        656,
+        608,
         400
       ]
     },
@@ -138,9 +81,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [
-        912,
+        832,
         400
       ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "D0T4nSbBhSkISQRe",
+          "name": "Google Drive OAuth2 API"
+        }
+      },
       "onError": "continueErrorOutput"
     },
     {
@@ -164,7 +113,7 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [
-        0,
+        32,
         400
       ],
       "id": "1cf9533f-80ca-4924-a6ca-d8f7ae798b76",
@@ -175,20 +124,167 @@
           "name": "n8n free OpenAI API credits"
         }
       }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=# Role\nYou are a metadata extractor. You receive a formatted HTML document of academic notes.\n\n# Task\nExtract the following fields from the content:\n- title: The main topic or subject of the notes (short, 3-6 words)\n- subject: The academic subject/course (e.g. Biology, History, Physics)\n- date: Today's date in YYYY-MM-DD format (use {{ $now.toFormat('yyyy-MM-dd') }})\n- summary: One sentence describing what the notes cover\n\n# Output\nRespond ONLY with a valid JSON object. No markdown, no explanation.\n\nExample:\n{\n  \"title\": \"Cell Division and Mitosis\",\n  \"subject\": \"Biology\",\n  \"date\": \"2024-04-18\",\n  \"summary\": \"Notes covering the stages of mitosis and cell cycle regulation.\"\n}\n\nHTML Input:{{ $json.output[0].content[0].text }}\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        400
+      ],
+      "id": "de086a61-074d-421c-9bf0-e86786f3d3b9",
+      "name": "Metadata",
+      "credentials": {
+        "openAiApi": {
+          "id": "AJUyEfipeY8dMHNc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Raw Notes Fetching:-\n\nThis starts weekly or we can run it manually, data from the document will be fetched",
+        "height": 432,
+        "width": 464,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "2aabefc6-c4e9-4e18-a8b5-2f45f4aba478",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Formatter & Metadata:-\n\nThis station formats the content to the html node, and metadata analyses and fixes the headings, subtitles, topics and add a date secti",
+        "height": 320,
+        "width": 736,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "9af1a264-4ad2-4010-b22d-e46e218c1d1e",
+      "name": "Sticky Note1"
     }
   ],
   "pinData": {
-    "Google Drive": [
+    "Weekly Schedule": [
       {
         "json": {
-          "name": "First item",
-          "code": 1
+          "timestamp": "2026-04-18T15:59:39.136+05:30",
+          "Readable date": "April 18th 2026, 3:59:39 pm",
+          "Readable time": "3:59:39 pm",
+          "Day of week": "Saturday",
+          "Year": "2026",
+          "Month": "April",
+          "Day of month": "18",
+          "Hour": "15",
+          "Minute": "59",
+          "Second": "39",
+          "Timezone": "Asia/Calcutta (UTC+05:30)"
+        },
+        "pairedItem": {
+          "item": 0
         }
-      },
+      }
+    ],
+    "Fetch Raw Notes": [
       {
         "json": {
-          "name": "Second item",
-          "code": 2
+          "documentId": "11Mbz0IPrByyLlfK1oWNYnZ63umBNlYTbTcBuq-jCgdI",
+          "content": "Cloud platforms\nA cloud platform is a complete environment that provides computing resources tool services and infrastructure over the internet to build deploy manage applications\nComponents of a cloud platform\nCompute - virtual machine or containers\nStorage - database\nNetwork- load balancing or routing\nTools - API ide \nSecurity - iam identity access management\nMonitoring - logs and analytic\nExample of cloud platform\nAmazon aws - Amazon web service\nMicrosoft azure\nGoogle cloud platform\nStep by step working of cloud platforms \nUser send a request for the services to the cloud platform provided by service provide through internet \nCloud platforms processes the request based on cloud resources available\nData stored or retrieved from the cloud storage depending upon the request of the user\nThe response to the request is delivered to the user instantly depending upon the availability of the cloud resource\nImpact of cloud platforms\nImpact on business\nNo capex is required to procure hardware\nCloud platforms follow pay as you go model\nDeployment of the apps can be done very quickly\nThe resources or instances of resources can be increased or decreased at any time based on requirement of the business\nImpact on education\nVirtual labs\nOnline learning platforms\nRemote access to software\n\n\n"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Formatter": [
+      {
+        "json": {
+          "output": [
+            {
+              "id": "msg_00d346d69e500e9c0069e362b20f5c819aa5b6b576c35a496b",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "```html\n<div>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; }\n        h1 { color: #333; }\n        h2 { color: #555; }\n        h3 { color: #777; }\n    </style>\n    <h1>Cloud Platforms</h1>\n    <p>A <strong>cloud platform</strong> is a complete environment that provides computing resources, tool services, and infrastructure over the internet to build, deploy, and manage applications.</p>\n\n    <h2>Components of a Cloud Platform</h2>\n    <ul>\n        <li><strong>Compute:</strong> Virtual machines or containers</li>\n        <li><strong>Storage:</strong> Databases</li>\n        <li><strong>Network:</strong> Load balancing or routing</li>\n        <li><strong>Tools:</strong> API, IDE</li>\n        <li><strong>Security:</strong> IAM (Identity Access Management)</li>\n        <li><strong>Monitoring:</strong> Logs and analytics</li>\n    </ul>\n\n    <h2>Examples of Cloud Platforms</h2>\n    <ul>\n        <li>Amazon AWS (Amazon Web Services)</li>\n        <li>Microsoft Azure</li>\n        <li>Google Cloud Platform</li>\n    </ul>\n\n    <h2>Step-by-Step Working of Cloud Platforms</h2>\n    <ol>\n        <li>User sends a request for services to the cloud platform provided by the service provider through the internet.</li>\n        <li>The cloud platform processes the request based on the cloud resources available.</li>\n        <li>Data is stored or retrieved from the cloud storage depending upon the user's request.</li>\n        <li>The response to the request is delivered to the user instantly depending upon the availability of the cloud resource.</li>\n    </ol>\n\n    <h2>Impact of Cloud Platforms</h2>\n\n    <h3>Impact on Business</h3>\n    <ul>\n        <li>No capital expenditure (CAPEX) is required to procure hardware.</li>\n        <li>Cloud platforms follow a pay-as-you-go model.</li>\n        <li>Deployment of applications can be done very quickly.</li>\n        <li>The resources or instances of resources can be increased or decreased at any time based on the requirements of the business.</li>\n    </ul>\n\n    <h3>Impact on Education</h3>\n    <ul>\n        <li>Virtual labs</li>\n        <li>Online learning platforms</li>\n        <li>Remote access to software</li>\n    </ul>\n</div>\n```"
+                }
+              ],
+              "role": "assistant"
+            }
+          ]
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Metadata": [
+      {
+        "json": {
+          "output": [
+            {
+              "id": "msg_0e5601ad97d8b7550069e362f113448199bea48fdc52c111d9",
+              "type": "message",
+              "status": "completed",
+              "content": [
+                {
+                  "type": "output_text",
+                  "annotations": [],
+                  "logprobs": [],
+                  "text": "{\n  \"title\": \"Cloud Platforms\",\n  \"subject\": \"Computer Science\",\n  \"date\": \"2026-04-18\",\n  \"summary\": \"Notes discussing cloud platforms, their components, examples, working steps, and impacts on business and education.\"\n}"
+                }
+              ],
+              "role": "assistant"
+            }
+          ]
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Parse Metadata & Assemble": [
+      {
+        "json": {
+          "fileName": "2026-04-18_Computer_Science_Cloud_Platforms.html",
+          "subject": "Computer Science",
+          "title": "Cloud Platforms",
+          "summary": "Notes discussing cloud platforms, their components, examples, working steps, and impacts on business and education.",
+          "date": "2026-04-18",
+          "htmlContent": "```html\n<div>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; }\n        h1 { color: #333; }\n        h2 { color: #555; }\n        h3 { color: #777; }\n    </style>\n    <h1>Cloud Platforms</h1>\n    <p>A <strong>cloud platform</strong> is a complete environment that provides computing resources, tool services, and infrastructure over the internet to build, deploy, and manage applications.</p>\n\n    <h2>Components of a Cloud Platform</h2>\n    <ul>\n        <li><strong>Compute:</strong> Virtual machines or containers</li>\n        <li><strong>Storage:</strong> Databases</li>\n        <li><strong>Network:</strong> Load balancing or routing</li>\n        <li><strong>Tools:</strong> API, IDE</li>\n        <li><strong>Security:</strong> IAM (Identity Access Management)</li>\n        <li><strong>Monitoring:</strong> Logs and analytics</li>\n    </ul>\n\n    <h2>Examples of Cloud Platforms</h2>\n    <ul>\n        <li>Amazon AWS (Amazon Web Services)</li>\n        <li>Microsoft Azure</li>\n        <li>Google Cloud Platform</li>\n    </ul>\n\n    <h2>Step-by-Step Working of Cloud Platforms</h2>\n    <ol>\n        <li>User sends a request for services to the cloud platform provided by the service provider through the internet.</li>\n        <li>The cloud platform processes the request based on the cloud resources available.</li>\n        <li>Data is stored or retrieved from the cloud storage depending upon the user's request.</li>\n        <li>The response to the request is delivered to the user instantly depending upon the availability of the cloud resource.</li>\n    </ol>\n\n    <h2>Impact of Cloud Platforms</h2>\n\n    <h3>Impact on Business</h3>\n    <ul>\n        <li>No capital expenditure (CAPEX) is required to procure hardware.</li>\n        <li>Cloud platforms follow a pay-as-you-go model.</li>\n        <li>Deployment of applications can be done very quickly.</li>\n        <li>The resources or instances of resources can be increased or decreased at any time based on the requirements of the business.</li>\n    </ul>\n\n    <h3>Impact on Education</h3>\n    <ul>\n        <li>Virtual labs</li>\n        <li>Online learning platforms</li>\n        <li>Remote access to software</li>\n    </ul>\n</div>\n```"
+        },
+        "pairedItem": {
+          "item": 0
         }
       }
     ]
@@ -227,17 +323,6 @@
         ]
       ]
     },
-    "Extract Metadata": {
-      "main": [
-        [
-          {
-            "node": "Parse Metadata & Assemble",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Parse Metadata & Assemble": {
       "main": [
         [
@@ -258,7 +343,18 @@
       "main": [
         [
           {
-            "node": "Extract Metadata",
+            "node": "Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Metadata": {
+      "main": [
+        [
+          {
+            "node": "Parse Metadata & Assemble",
             "type": "main",
             "index": 0
           }
@@ -271,8 +367,9 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "4ebca306-2823-4718-b641-ad051116c7ee",
+  "versionId": "a161c1cd-69d8-44d2-a998-5a07f5b79bfc",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "116a404514e7383db134d2f1f7f421aa533d0a56f50e82bddb90491c89a4f919"
   },
   "id": "9dNzJ8ELMIyN6XRI",
