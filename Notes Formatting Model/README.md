@@ -20,7 +20,7 @@ Triggered on a weekly schedule or manually on demand.
 | 2 | Fetch Raw Notes | Pulls raw content from Google Docs |
 | 3 | Formatter (Claude) | Corrects grammar, structures content, outputs clean HTML |
 | 4 | Extract Metadata (Claude) | Extracts title, subject, date, summary as JSON |
-| 5 | Parse & Assemble (Code) | Cleans output, builds filename, assembles final payload |
+| 5 | Parse & Assemble (Code) | Cleans output, builds filename, assembles final load |
 | 6 | Google Drive | Saves the HTML file with a structured filename |
 
 ---
