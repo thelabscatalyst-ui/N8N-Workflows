@@ -13,7 +13,8 @@ Raw data:
 - Do NOT add new information or external knowledge.
 
 # Output
-- Output ONLY valid HTML (no markdown, no JSON, no explanations).
+- Output ONLY raw HTML. No markdown code blocks, no backticks, no ```html fences.
 - Include a minimal inline <style> block.
 - Wrap all content in a single <div>.
 - Must be clean, complete, and renderable HTML.
+- First line must be: <meta charset="UTF-8">

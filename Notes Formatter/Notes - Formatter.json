@@ -53,7 +53,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Correct path for Anthropic node output\nconst raw = $input.item.json.output[0].content[0].text;\n\n// Parse JSON safely\nlet meta;\ntry {\n  // Claude sometimes wraps JSON in backticks — strip them\n  const cleaned = raw.replace(/```json|```/g, '').trim();\n  meta = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error(\"Failed to parse metadata JSON: \" + raw);\n}\n\n// Correct path for Formatter node (also Anthropic) — same structure\nconst html = $('Formatter').item.json.output[0].content[0].text;\n\n// Build filename: YYYY-MM-DD_Subject_Title.html\nconst safeName = (str) => str.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);\nconst fileName = `${meta.date}_${safeName(meta.subject)}_${safeName(meta.title)}.html`;\n\nreturn [{\n  json: {\n    fileName,\n    subject: meta.subject,\n    title: meta.title,\n    summary: meta.summary,\n    date: meta.date,\n    htmlContent: html\n  }\n}];"
+        "jsCode": "// Get metadata JSON from Extract Metadata node\nconst raw = $input.item.json.output[0].content[0].text;\n\nlet meta;\ntry {\n  const cleaned = raw.replace(/```json|```/g, '').trim();\n  meta = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error(\"Metadata parse failed: \" + raw);\n}\n\n// Get HTML from Formatter node\nlet html = $('Formatter').item.json.output[0].content[0].text;\n\n// Strip any markdown fences Claude may have added\nhtml = html\n  .replace(/^```html\\n?/im, '')\n  .replace(/^```\\n?/im, '')\n  .replace(/```$/m, '')\n  .trim();\n\n// Inject charset if missing\nif (!html.includes('charset')) {\n  html = html.replace('<style>', '<meta charset=\"UTF-8\">\\n<style>');\n}\n\n// Build filename\nconst safeName = (str) => str.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);\nconst fileName = `${meta.date}_${safeName(meta.subject)}_${safeName(meta.title)}.html`;\n\n// Prepare binary for Google Drive\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(html, 'utf8'),\n  fileName,\n  'text/html; charset=utf-8'\n);\n\nreturn [{\n  json: { fileName, subject: meta.subject, title: meta.title, summary: meta.summary, date: meta.date },\n  binary: { data: binaryData }\n}];"
       },
       "id": "09e898cb-d369-4ed0-9871-56fa2315bfb1",
       "name": "Parse Metadata & Assemble",
@@ -66,34 +66,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "googleDriveOAuth2Api",
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "multipart/related; boundary=foo_bar_baz",
-        "body": "=--foo_bar_baz\nContent-Type: application/json; charset=UTF-8\n\n{\n  \"name\": \"{{ $json.fileName }}\",\n  \"mimeType\": \"application/vnd.google-apps.document\",\n  \"parents\": [\"YOUR_DRIVE_FOLDER_ID\"]\n}\n\n--foo_bar_baz\nContent-Type: text/html; charset=UTF-8\n\n{{ $json.htmlContent }}\n--foo_bar_baz--",
-        "options": {}
-      },
-      "id": "27aa8a7e-9bf6-4ca7-98c4-b27e673302b8",
-      "name": "Google Drive",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        832,
-        400
-      ],
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "D0T4nSbBhSkISQRe",
-          "name": "Google Drive OAuth2 API"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
         "modelId": {
           "__rl": true,
           "value": "gpt-4o-mini",
@@ -103,7 +75,7 @@
         "responses": {
           "values": [
             {
-              "content": "=# Role\nYou are an expert academic note organizer and document formatter. Transform raw, unstructured notes into clean, structured, highly readable HTML documents suitable for study and revision.\n\nRaw data:\n{{ $json.content }}\n\n# Task\n- Correct grammar and spelling without altering meaning.\n- Organize into logical hierarchy: Main topics as <h1>, Subtopics as <h2>, Supporting sections as <h3>.\n- Group related ideas into clear paragraphs using <p>.\n- Convert lists into properly structured bullet points using <ul> and <li>.\n- Emphasize key terms using <strong>.\n- Do NOT add new information or external knowledge.\n\n# Output\n- Output ONLY valid HTML (no markdown, no JSON, no explanations).\n- Include a minimal inline <style> block.\n- Wrap all content in a single <div>.\n- Must be clean, complete, and renderable HTML."
+              "content": "=# Role\nYou are an expert academic note organizer and document formatter. Transform raw, unstructured notes into clean, structured, highly readable HTML documents suitable for study and revision.\n\nRaw data:\n{{ $json.content }}\n\n# Task\n- Correct grammar and spelling without altering meaning.\n- Organize into logical hierarchy: Main topics as <h1>, Subtopics as <h2>, Supporting sections as <h3>.\n- Group related ideas into clear paragraphs using <p>.\n- Convert lists into properly structured bullet points using <ul> and <li>.\n- Emphasize key terms using <strong>.\n- Do NOT add new information or external knowledge.\n\n# Output\n- Output ONLY raw HTML. No markdown code blocks, no backticks, no ```html fences.\n- Include a minimal inline <style> block.\n- Wrap all content in a single <div>.\n- Must be clean, complete, and renderable HTML.\n- First line must be: <meta charset=\"UTF-8\">"
             }
           ]
         },
@@ -136,7 +108,7 @@
         "responses": {
           "values": [
             {
-              "content": "=# Role\nYou are a metadata extractor. You receive a formatted HTML document of academic notes.\n\n# Task\nExtract the following fields from the content:\n- title: The main topic or subject of the notes (short, 3-6 words)\n- subject: The academic subject/course (e.g. Biology, History, Physics)\n- date: Today's date in YYYY-MM-DD format (use {{ $now.toFormat('yyyy-MM-dd') }})\n- summary: One sentence describing what the notes cover\n\n# Output\nRespond ONLY with a valid JSON object. No markdown, no explanation.\n\nExample:\n{\n  \"title\": \"Cell Division and Mitosis\",\n  \"subject\": \"Biology\",\n  \"date\": \"2024-04-18\",\n  \"summary\": \"Notes covering the stages of mitosis and cell cycle regulation.\"\n}\n\nHTML Input:{{ $json.output[0].content[0].text }}\n"
+              "content": "=# Role\nYou are a metadata extractor for academic notes.\n\n# Task\nExtract from the HTML input:\n- title: Main topic (3-6 words)\n- subject: Academic subject (e.g. Biology, Computer Science)\n- date: {{ $now.toFormat('yyyy-MM-dd') }}\n- summary: One sentence description\n\n# Output\nONLY a raw JSON object. No markdown, no backticks, no explanation.\n\n{\"title\": \"...\", \"subject\": \"...\", \"date\": \"...\", \"summary\": \"...\"}\n\nInput:\n{{ $('Formatter').item.json.output[0].content[0].text }}"
             }
           ]
         },
@@ -189,106 +161,43 @@
       "typeVersion": 1,
       "id": "9af1a264-4ad2-4010-b22d-e46e218c1d1e",
       "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "name": "={{ $('Parse Metadata & Assemble').item.json.title }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "root",
+          "mode": "list",
+          "cachedResultName": "/ (Root folder)",
+          "cachedResultUrl": "https://drive.google.com/drive"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        848,
+        400
+      ],
+      "id": "1d72cb35-f3d5-4a55-b778-868b92b1775f",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "D0T4nSbBhSkISQRe",
+          "name": "Google Drive OAuth2 API"
+        }
+      }
     }
   ],
-  "pinData": {
-    "Weekly Schedule": [
-      {
-        "json": {
-          "timestamp": "2026-04-18T15:59:39.136+05:30",
-          "Readable date": "April 18th 2026, 3:59:39 pm",
-          "Readable time": "3:59:39 pm",
-          "Day of week": "Saturday",
-          "Year": "2026",
-          "Month": "April",
-          "Day of month": "18",
-          "Hour": "15",
-          "Minute": "59",
-          "Second": "39",
-          "Timezone": "Asia/Calcutta (UTC+05:30)"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ],
-    "Fetch Raw Notes": [
-      {
-        "json": {
-          "documentId": "11Mbz0IPrByyLlfK1oWNYnZ63umBNlYTbTcBuq-jCgdI",
-          "content": "Cloud platforms\nA cloud platform is a complete environment that provides computing resources tool services and infrastructure over the internet to build deploy manage applications\nComponents of a cloud platform\nCompute - virtual machine or containers\nStorage - database\nNetwork- load balancing or routing\nTools - API ide \nSecurity - iam identity access management\nMonitoring - logs and analytic\nExample of cloud platform\nAmazon aws - Amazon web service\nMicrosoft azure\nGoogle cloud platform\nStep by step working of cloud platforms \nUser send a request for the services to the cloud platform provided by service provide through internet \nCloud platforms processes the request based on cloud resources available\nData stored or retrieved from the cloud storage depending upon the request of the user\nThe response to the request is delivered to the user instantly depending upon the availability of the cloud resource\nImpact of cloud platforms\nImpact on business\nNo capex is required to procure hardware\nCloud platforms follow pay as you go model\nDeployment of the apps can be done very quickly\nThe resources or instances of resources can be increased or decreased at any time based on requirement of the business\nImpact on education\nVirtual labs\nOnline learning platforms\nRemote access to software\n\n\n"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ],
-    "Formatter": [
-      {
-        "json": {
-          "output": [
-            {
-              "id": "msg_00d346d69e500e9c0069e362b20f5c819aa5b6b576c35a496b",
-              "type": "message",
-              "status": "completed",
-              "content": [
-                {
-                  "type": "output_text",
-                  "annotations": [],
-                  "logprobs": [],
-                  "text": "```html\n<div>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; }\n        h1 { color: #333; }\n        h2 { color: #555; }\n        h3 { color: #777; }\n    </style>\n    <h1>Cloud Platforms</h1>\n    <p>A <strong>cloud platform</strong> is a complete environment that provides computing resources, tool services, and infrastructure over the internet to build, deploy, and manage applications.</p>\n\n    <h2>Components of a Cloud Platform</h2>\n    <ul>\n        <li><strong>Compute:</strong> Virtual machines or containers</li>\n        <li><strong>Storage:</strong> Databases</li>\n        <li><strong>Network:</strong> Load balancing or routing</li>\n        <li><strong>Tools:</strong> API, IDE</li>\n        <li><strong>Security:</strong> IAM (Identity Access Management)</li>\n        <li><strong>Monitoring:</strong> Logs and analytics</li>\n    </ul>\n\n    <h2>Examples of Cloud Platforms</h2>\n    <ul>\n        <li>Amazon AWS (Amazon Web Services)</li>\n        <li>Microsoft Azure</li>\n        <li>Google Cloud Platform</li>\n    </ul>\n\n    <h2>Step-by-Step Working of Cloud Platforms</h2>\n    <ol>\n        <li>User sends a request for services to the cloud platform provided by the service provider through the internet.</li>\n        <li>The cloud platform processes the request based on the cloud resources available.</li>\n        <li>Data is stored or retrieved from the cloud storage depending upon the user's request.</li>\n        <li>The response to the request is delivered to the user instantly depending upon the availability of the cloud resource.</li>\n    </ol>\n\n    <h2>Impact of Cloud Platforms</h2>\n\n    <h3>Impact on Business</h3>\n    <ul>\n        <li>No capital expenditure (CAPEX) is required to procure hardware.</li>\n        <li>Cloud platforms follow a pay-as-you-go model.</li>\n        <li>Deployment of applications can be done very quickly.</li>\n        <li>The resources or instances of resources can be increased or decreased at any time based on the requirements of the business.</li>\n    </ul>\n\n    <h3>Impact on Education</h3>\n    <ul>\n        <li>Virtual labs</li>\n        <li>Online learning platforms</li>\n        <li>Remote access to software</li>\n    </ul>\n</div>\n```"
-                }
-              ],
-              "role": "assistant"
-            }
-          ]
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ],
-    "Metadata": [
-      {
-        "json": {
-          "output": [
-            {
-              "id": "msg_0e5601ad97d8b7550069e362f113448199bea48fdc52c111d9",
-              "type": "message",
-              "status": "completed",
-              "content": [
-                {
-                  "type": "output_text",
-                  "annotations": [],
-                  "logprobs": [],
-                  "text": "{\n  \"title\": \"Cloud Platforms\",\n  \"subject\": \"Computer Science\",\n  \"date\": \"2026-04-18\",\n  \"summary\": \"Notes discussing cloud platforms, their components, examples, working steps, and impacts on business and education.\"\n}"
-                }
-              ],
-              "role": "assistant"
-            }
-          ]
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ],
-    "Parse Metadata & Assemble": [
-      {
-        "json": {
-          "fileName": "2026-04-18_Computer_Science_Cloud_Platforms.html",
-          "subject": "Computer Science",
-          "title": "Cloud Platforms",
-          "summary": "Notes discussing cloud platforms, their components, examples, working steps, and impacts on business and education.",
-          "date": "2026-04-18",
-          "htmlContent": "```html\n<div>\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; }\n        h1 { color: #333; }\n        h2 { color: #555; }\n        h3 { color: #777; }\n    </style>\n    <h1>Cloud Platforms</h1>\n    <p>A <strong>cloud platform</strong> is a complete environment that provides computing resources, tool services, and infrastructure over the internet to build, deploy, and manage applications.</p>\n\n    <h2>Components of a Cloud Platform</h2>\n    <ul>\n        <li><strong>Compute:</strong> Virtual machines or containers</li>\n        <li><strong>Storage:</strong> Databases</li>\n        <li><strong>Network:</strong> Load balancing or routing</li>\n        <li><strong>Tools:</strong> API, IDE</li>\n        <li><strong>Security:</strong> IAM (Identity Access Management)</li>\n        <li><strong>Monitoring:</strong> Logs and analytics</li>\n    </ul>\n\n    <h2>Examples of Cloud Platforms</h2>\n    <ul>\n        <li>Amazon AWS (Amazon Web Services)</li>\n        <li>Microsoft Azure</li>\n        <li>Google Cloud Platform</li>\n    </ul>\n\n    <h2>Step-by-Step Working of Cloud Platforms</h2>\n    <ol>\n        <li>User sends a request for services to the cloud platform provided by the service provider through the internet.</li>\n        <li>The cloud platform processes the request based on the cloud resources available.</li>\n        <li>Data is stored or retrieved from the cloud storage depending upon the user's request.</li>\n        <li>The response to the request is delivered to the user instantly depending upon the availability of the cloud resource.</li>\n    </ol>\n\n    <h2>Impact of Cloud Platforms</h2>\n\n    <h3>Impact on Business</h3>\n    <ul>\n        <li>No capital expenditure (CAPEX) is required to procure hardware.</li>\n        <li>Cloud platforms follow a pay-as-you-go model.</li>\n        <li>Deployment of applications can be done very quickly.</li>\n        <li>The resources or instances of resources can be increased or decreased at any time based on the requirements of the business.</li>\n    </ul>\n\n    <h3>Impact on Education</h3>\n    <ul>\n        <li>Virtual labs</li>\n        <li>Online learning platforms</li>\n        <li>Remote access to software</li>\n    </ul>\n</div>\n```"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Weekly Schedule": {
       "main": [
@@ -327,16 +236,11 @@
       "main": [
         [
           {
-            "node": "Google Drive",
+            "node": "Upload file",
             "type": "main",
             "index": 0
           }
         ]
-      ]
-    },
-    "Google Drive": {
-      "main": [
-        []
       ]
     },
     "Formatter": {
@@ -367,7 +271,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "a161c1cd-69d8-44d2-a998-5a07f5b79bfc",
+  "versionId": "ccc9028c-0d65-4c98-94dd-af790a97dbe6",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "116a404514e7383db134d2f1f7f421aa533d0a56f50e82bddb90491c89a4f919"

@@ -1,4 +1,4 @@
-# Notes Organiser & Formatter (n8n)
+# N8N Notes Formatter Model
 
 An automated pipeline that converts raw, unstructured notes into clean,
 structured HTML documents — then saves them directly to Google Drive.
