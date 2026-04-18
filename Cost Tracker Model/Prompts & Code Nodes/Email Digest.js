@@ -1,38 +1,93 @@
-const d = $input.item.json;
-const s = d.summary;
-let h = '<h2 style="font-family:sans-serif">Competitor Intelligence: ' + d.brand + '</h2>';
-h += '<p style="font-family:sans-serif">Run: ' + new Date().toLocaleDateString('en-IN') + '</p>';
-h += '<table style="border-collapse:collapse;width:100%;font-family:sans-serif;font-size:14px">';
-h += '<tr style="background:#f0f0f0"><th style="padding:8px;border:1px solid #ddd">Metric</th><th style="padding:8px;border:1px solid #ddd">Count</th></tr>';
-h += '<tr><td style="padding:8px;border:1px solid #ddd">New Products</td><td style="padding:8px;border:1px solid #ddd;text-align:center">' + s.new_count + '</td></tr>';
-h += '<tr><td style="padding:8px;border:1px solid #ddd">Price Changes</td><td style="padding:8px;border:1px solid #ddd;text-align:center">' + s.updated_count + '</td></tr>';
-h += '<tr><td style="padding:8px;border:1px solid #ddd">Removed</td><td style="padding:8px;border:1px solid #ddd;text-align:center">' + s.removed_count + '</td></tr>';
-h += '</table>';
-if (d.new_products?.length) {
-  h += '<h3 style="color:#2e7d32;font-family:sans-serif">New Products</h3><ul style="font-family:sans-serif">';
-  for (const p of d.new_products) {
-    h += '<li><b>' + p.name + '</b> Rs.' + (p.price||'N/A');
-    if (p.mrp) h += ' <span style="text-decoration:line-through;color:#999">Rs.' + p.mrp + '</span>';
-    h += ' [' + (p.category||'') + ']</li>';
+const items = $input.all();
+
+if (!items || items.length === 0) {
+  return [{ json: { html: '<p>No changes detected.</p>', subject: 'Catalogue Update: No Changes' } }];
+}
+
+const newProducts  = items.filter(i => i.json.change_type === 'NEW');
+const priceChanges = items.filter(i => i.json.change_type === 'PRICE_CHANGE');
+const tagChanges   = items.filter(i => i.json.change_type === 'TAG_CHANGE');
+const removedItems = items.filter(i => i.json.change_type === 'REMOVED');
+
+function buildRow(item) {
+  const d = item.json;
+  let priceCell = '';
+  if (d.old_price && d.old_price !== d.price) {
+    priceCell = '<s style="color:#999">Rs.' + d.old_price + '</s> &rarr; <b>Rs.' + d.price + '</b>';
+  } else {
+    priceCell = 'Rs.' + (d.price || '-');
   }
-  h += '</ul>';
-}
-if (d.updated_products?.length) {
-  h += '<h3 style="color:#e65100;font-family:sans-serif">Price / Detail Changes</h3><ul style="font-family:sans-serif">';
-  for (const p of d.updated_products) {
-    const up = parseFloat(p.price_delta) > 0;
-    const col = up ? '#c62828' : '#2e7d32';
-    h += '<li><b>' + p.name + '</b>: Rs.' + p.old_price + ' to <span style="color:' + col + '">Rs.' + p.price + '</span>';
-    if (Math.abs(parseFloat(p.price_delta)) > 0) h += ' (' + (up ? '+' : '') + p.price_delta + ')';
-    if (p.mrp) h += ' | MRP Rs.' + p.mrp;
-    h += '</li>';
+  let tagCell = '';
+  if (d.old_tags && d.old_tags !== d.tags) {
+    tagCell = '<span style="color:#999">[was: ' + d.old_tags + ']</span> &rarr; ' + (d.tags || '-');
+  } else {
+    tagCell = d.tags || '-';
   }
-  h += '</ul>';
+  return '<tr>'
+    + '<td style="padding:8px;border:1px solid #ddd">' + (d.name || '-') + '</td>'
+    + '<td style="padding:8px;border:1px solid #ddd">' + (d.category || '-') + '</td>'
+    + '<td style="padding:8px;border:1px solid #ddd">' + priceCell + '</td>'
+    + '<td style="padding:8px;border:1px solid #ddd">' + tagCell + '</td>'
+    + '</tr>';
 }
-if (d.removed_products?.length) {
-  h += '<h3 style="color:#888;font-family:sans-serif">Removed</h3><ul style="font-family:sans-serif">';
-  for (const n of d.removed_products) h += '<li>' + n + '</li>';
-  h += '</ul>';
+
+function buildSection(title, color, list) {
+  if (!list.length) return '';
+  let rows = '';
+  for (let i = 0; i < list.length; i++) { rows += buildRow(list[i]); }
+  return '<h3 style="font-family:sans-serif;color:' + color + ';margin-top:24px">' + title + ' (' + list.length + ')</h3>'
+    + '<table style="border-collapse:collapse;width:100%;font-family:sans-serif;font-size:13px">'
+    + '<tr style="background:#f0f0f0">'
+    + '<th style="padding:8px;border:1px solid #ddd;text-align:left">Product</th>'
+    + '<th style="padding:8px;border:1px solid #ddd;text-align:left">Category</th>'
+    + '<th style="padding:8px;border:1px solid #ddd;text-align:left">Price</th>'
+    + '<th style="padding:8px;border:1px solid #ddd;text-align:left">Tags</th>'
+    + '</tr>'
+    + rows
+    + '</table>';
 }
-h += '<p style="font-family:sans-serif"><a href="https://docs.google.com/spreadsheets/d/1FDTqrcWRbU5v35FirKleCYwbC3W2E6acQ9lx0wCTeUA">Open Catalogue Sheet</a></p>';
-return [{ json: { brand: d.brand, html: h, subject: 'Competitor Alert: ' + d.brand + ' (' + s.new_count + ' new, ' + s.updated_count + ' changed, ' + s.removed_count + ' removed)' } }];
+
+const brand    = items[0].json.brand || 'Competitor';
+const runDate  = new Date().toLocaleDateString('en-IN', { dateStyle: 'full' });
+const total    = items.length;
+
+let html = '<div style="font-family:sans-serif;max-width:700px;margin:auto">';
+html += '<h2 style="color:#1a1a1a">Catalogue Intelligence: ' + brand + '</h2>';
+html += '<p style="color:#555">Run date: ' + runDate + ' &nbsp;|&nbsp; <b>' + total + ' changes detected</b></p>';
+
+html += '<table style="border-collapse:collapse;width:100%;font-size:13px;margin-bottom:16px">';
+html += '<tr style="background:#f7f7f7">'
+  + '<th style="padding:8px;border:1px solid #ddd">New Products</th>'
+  + '<th style="padding:8px;border:1px solid #ddd">Price Changes</th>'
+  + '<th style="padding:8px;border:1px solid #ddd">Tag Changes</th>'
+  + '<th style="padding:8px;border:1px solid #ddd">Removed</th>'
+  + '</tr>';
+html += '<tr style="text-align:center;font-weight:bold">'
+  + '<td style="padding:8px;border:1px solid #ddd;color:#2e7d32">' + newProducts.length + '</td>'
+  + '<td style="padding:8px;border:1px solid #ddd;color:#e65100">' + priceChanges.length + '</td>'
+  + '<td style="padding:8px;border:1px solid #ddd;color:#1565c0">' + tagChanges.length + '</td>'
+  + '<td style="padding:8px;border:1px solid #ddd;color:#b71c1c">' + removedItems.length + '</td>'
+  + '</tr>';
+html += '</table>';
+
+html += buildSection('NEW Products', '#2e7d32', newProducts);
+html += buildSection('Price Changes', '#e65100', priceChanges);
+html += buildSection('Tag Changes', '#1565c0', tagChanges);
+html += buildSection('Removed Products', '#b71c1c', removedItems);
+
+html += '<p style="color:#aaa;font-size:11px;margin-top:32px">Auto-generated by Catalogue Monitor &middot; ' + runDate + '</p>';
+html += '</div>';
+
+const subject = 'Catalogue Update: ' + total + ' changes | ' + brand + ' | ' + runDate;
+
+return [{
+  json: {
+    html: html,
+    subject: subject,
+    change_count: total,
+    new_count: newProducts.length,
+    price_change_count: priceChanges.length,
+    tag_change_count: tagChanges.length,
+    removed_count: removedItems.length
+  }
+}];

@@ -24,7 +24,7 @@ This system automates the entire competitor monitoring pipeline — from scrapin
 
 Here is how it addresses the problem:
 
-- It reads a list of competitor pricing page URLs directly from a Google Sheet, so adding a new competitor is as simple as adding a new row
+- It reads the list of competitor pricing page URLs directly from a Google Sheet, so adding a new competitor is as simple as adding a new row
 - It scrapes the live HTML of each competitor's product page, converts it to clean markdown, and uses a single AI node to extract structured product data — name, price, category, and tags
 - That extracted data is compared against the last saved snapshot in Google Sheets to detect exactly what changed — new products, price updates, or tag changes
 - Only the differences are written back to the sheet, keeping the data clean and traceable
