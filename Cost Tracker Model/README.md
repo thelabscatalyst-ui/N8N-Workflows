@@ -1,6 +1,6 @@
 # N8N Competitor Product Analysis System
 
-An automated, cost-efficient competitor tracking system built on n8n that monitors product listings, detects changes, and delivers daily insights — without manual effort.
+An automated, cost-efficient competitor tracking system built on n8n that monitors product listings, detects changes, and delivers daily insights without manual effort.
 
 ---
 
