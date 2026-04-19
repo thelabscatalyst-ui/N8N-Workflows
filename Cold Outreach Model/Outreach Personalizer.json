@@ -3,22 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Routing Logic\n",
-        "height": 232,
-        "width": 860,
-        "color": 5
-      },
-      "id": "2bff0abb-f7fa-4775-bbcb-990a3e101338",
-      "name": "Sticky Note d6df6f78",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -992,
-        560
-      ]
-    },
-    {
-      "parameters": {
         "resource": "draft",
         "subject": "={{ $json.output.subject }}",
         "message": "=Hey {{ $(\"Leads\").item.json.Name }},\n\n{{ $json.output.icebreaker }}\n\n{{ $json.output.pitch }}\n\n{{ $json.output.cta }}\n\nP.S. {{ $json.output.ps }}",
@@ -31,7 +15,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        368,
+        -176,
         640
       ],
       "webhookId": "4907ed58-2f86-4ab1-a7bf-0e55496a07dd",
@@ -158,8 +142,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        672,
-        592
+        112,
+        640
       ],
       "credentials": {
         "googleSheetsOAuth2Api": {
@@ -211,7 +195,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -768,
+        -640,
         640
       ],
       "credentials": {
@@ -222,52 +206,20 @@
       }
     },
     {
-      "parameters": {},
-      "id": "b10c8703-e8d4-47c3-9b75-e1ff416d635f",
-      "name": "Number of Leads",
-      "type": "n8n-nodes-base.limit",
-      "typeVersion": 1,
-      "position": [
-        -592,
-        640
-      ]
-    },
-    {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-4o-mini",
-          "mode": "list",
-          "cachedResultName": "GPT-4O-MINI"
-        },
-        "responses": {
-          "values": [
-            {
-              "role": "system",
-              "content": "You are a cold outreach research assistant. Your job is to extract sharp, personalized insights from company and LinkedIn URLs that \nwill be used in analyzing and drafting a cold email/DM\n\nINPUT:\nYou will receive up to two links:\n1. Company Website URL (optional)\n2. LinkedIn Profile URL (optional)\n\nTASK:\nAnalyze the provided link(s) and extract insights optimized of writing a cold mail \n\nRULES:\n\n1. If ONLY ONE link is provided:\n   - Generate a single cohesive report (MAX 130 words)\n\n2. If BOTH links are provided:\n   - Generate ONE combined report (MAX 260 words)\n   - Two sections: Company Insights / LinkedIn Insights\n   - No repetition between sections\n\n3. WHAT TO LOOK FOR:\n   Company Website:\n   - Their core promise / positioning statement\n   - Who they serve (niche audience)\n   - Any growth signals (new launches, hiring, expansion)\n   - Pain points their product solves\n   - Tone of their brand messaging\n\n   LinkedIn Profile:\n   - Person's current role and tenure\n   - Recent posts, shares, or activity (what they care about)\n   - Career trajectory (promotion, new role = warm signal)\n   - Skills or focus areas that match your outreach angle\n   - Any shared context (mutual connections, interests, content)\n\n4. CONTENT RULES:\n   - Be specific, not generic. \"They sell health snacks\" is bad.\n     \"They position around guilt-free convenience for urban \n     professionals\" is good.\n   - If you can't find a meaningful insight, skip it. \n     Don't pad with filler.\n   - Write as notes for a copywriter, not a business analyst.\n   - Every line should either spark a personalized opener OR \n     justify why this person needs your solution NOW.\n\n5. OUTPUT FORMAT:\n\nIf ONE link:\n[Short Research Report]\nInsights only. No intros or conclusions.\n\nIf TWO links:\nCompany Insights:\n[Tagged insights]\n\nLinkedIn Insights:\n[Tagged insights]\n\nIMPORTANT:\n- Strictly within word limits.\n- Zero fluff. Every word must earn its place.\n- The output feeds directly into an AI that writes cold emails.\n  Treat it like a creative brief, not a summary."
-            },
-            {
-              "content": "=The given outputs are:\n- Company's Webiste: {{ $json['Website '] }}\n- LinkedIn: {{ $json['LikendIn Profile'] }}"
-            }
-          ]
-        },
-        "builtInTools": {},
-        "options": {}
+        "content": "## Drafting & Mailing\n\nThis analyses all the data related to the specific lead, and create a customized cold email, each part separated, and sends the email or save it to the draft (whichever). updates the parts column in the sheet respectively\n",
+        "height": 288,
+        "width": 704,
+        "color": 3
       },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 2.1,
+      "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -416,
-        640
+        -704,
+        512
       ],
-      "id": "8631bc26-ddbc-486c-b245-6d1cd6085592",
-      "name": "Researcher",
-      "credentials": {
-        "openAiApi": {
-          "id": "AJUyEfipeY8dMHNc",
-          "name": "n8n free OpenAI API credits"
-        }
-      }
+      "typeVersion": 1,
+      "id": "564c7b57-8510-4496-ac2b-c92f53ee01e4",
+      "name": "Sticky Note"
     },
     {
       "parameters": {
@@ -300,7 +252,7 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [
-        48,
+        -480,
         640
       ],
       "id": "a5ec2ee5-afbd-457a-954f-586a09e0ec7f",
@@ -311,57 +263,9 @@
           "name": "n8n free OpenAI API credits"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "## Drafting & Mailing",
-        "height": 240,
-        "width": 496,
-        "color": 3
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        16,
-        560
-      ],
-      "typeVersion": 1,
-      "id": "564c7b57-8510-4496-ac2b-c92f53ee01e4",
-      "name": "Sticky Note"
     }
   ],
-  "pinData": {
-    "Cold Email": [
-      {
-        "json": {
-          "output": [
-            {
-              "id": "msg_087f5455d87729b00069e4bb5358108193b4608e6b0b3e6e7a",
-              "type": "message",
-              "status": "completed",
-              "content": [
-                {
-                  "type": "output_text",
-                  "annotations": [],
-                  "logprobs": [],
-                  "text": {
-                    "subject": "Noticed this at {Company}",
-                    "icebreaker": "I took a quick look at {Company} and noticed a strong focus on efficiency — something I’ve been keeping an eye on lately.",
-                    "pitch": "I work with teams to streamline their workflows and reduce manual work using simple automation.",
-                    "cta": "Would it make sense to explore this briefly?",
-                    "ps": "Recently did something similar for a team in your space — love to walk you through it."
-                  }
-                }
-              ],
-              "role": "assistant"
-            }
-          ]
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Create Email Draft": {
       "main": [
@@ -389,28 +293,6 @@
       "main": [
         [
           {
-            "node": "Number of Leads",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Number of Leads": {
-      "main": [
-        [
-          {
-            "node": "Researcher",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Researcher": {
-      "main": [
-        [
-          {
             "node": "Cold Email",
             "type": "main",
             "index": 0
@@ -435,7 +317,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "fe68697c-6672-420a-850f-fa72eca5b7db",
+  "versionId": "03fcdebf-8d6f-4c4b-85f4-423f259d117c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "116a404514e7383db134d2f1f7f421aa533d0a56f50e82bddb90491c89a4f919"
