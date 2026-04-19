@@ -19,8 +19,9 @@ Using the input below, generate a cold outreach message, learn and study data fr
 {{ $json['LikendIn Profile'] }}
 {{ $json.Role }}
 {{ $json.Company }}
-{{ $json['Company Website'] }}
-{{ $json['Company Profile'] }}
+{{ $json['Website '] }}
+{{ $json['Company\'s LinkedIn '] }}
+{{ $json['LikendIn Profile'] }}
 {{ $json.Summary }}
 
 INPUT:
@@ -48,4 +49,3 @@ RULES:
 - Output exactly in this format (no JSON, no markdown):
 
 {"subject": "","icebreaker": "","pitch": "","cta": "","ps": ""}
-

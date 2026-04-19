@@ -3,212 +3,83 @@
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "months",
-              "monthsInterval": 12
-            }
-          ]
+        "content": "## Routing Logic\n",
+        "height": 232,
+        "width": 860,
+        "color": 5
+      },
+      "id": "2bff0abb-f7fa-4775-bbcb-990a3e101338",
+      "name": "Sticky Note d6df6f78",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -992,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.output.subject }}",
+        "message": "=Hey {{ $(\"Leads\").item.json.Name }},\n\n{{ $json.output.icebreaker }}\n\n{{ $json.output.pitch }}\n\n{{ $json.output.cta }}\n\nP.S. {{ $json.output.ps }}",
+        "options": {
+          "sendTo": "={{ $(\"Leads\").item.json.Email }}"
         }
       },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
+      "id": "e6bbb064-e10b-4132-99f4-21c4cf11555f",
+      "name": "Create Email Draft",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
       "position": [
-        256,
-        160
+        368,
+        640
       ],
-      "id": "50cc69f2-5169-42c3-a85f-18f1fb8524eb",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
-        "content": "## Array & Tabular Data\nThis would take all the leads information written in the sheet.\n\nBasically sheet is filled with ton of information about the person we want to send a cold email, or a DM",
-        "height": 176,
-        "width": 272,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        -64,
-        288
-      ],
-      "typeVersion": 1,
-      "id": "a0cdeb4a-8331-4f4a-8a94-32400601edcf",
-      "name": "Sticky Note"
-    },
-    {
-      "parameters": {
-        "documentId": {
-          "__rl": true,
-          "value": "1mP18TlU_3DihJRpiunwA-McrNxehNkOUTmvE4fQ93YA",
-          "mode": "list",
-          "cachedResultName": "Buisness Workflow",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mP18TlU_3DihJRpiunwA-McrNxehNkOUTmvE4fQ93YA/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": 296892909,
-          "mode": "list",
-          "cachedResultName": "Currunt Leads",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mP18TlU_3DihJRpiunwA-McrNxehNkOUTmvE4fQ93YA/edit#gid=296892909"
-        },
-        "filtersUI": {
-          "values": []
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        288,
-        368
-      ],
-      "id": "43e9a0c6-e897-4460-add1-9022c8f213ec",
-      "name": "Fetch - Currunt Leads",
+      "webhookId": "4907ed58-2f86-4ab1-a7bf-0e55496a07dd",
       "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "O5J0MIbtTHuGSYtB",
-          "name": "Meher - Sheets"
+        "gmailOAuth2": {
+          "id": "28ZFVbmeELASWa67",
+          "name": "Gmail OAuth2 API"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "## Personalise Cold Email Outreacher\n- Creates cold email after researching ton of information about the lead beforehand",
-        "height": 96,
-        "width": 448,
-        "color": 7
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        480,
-        32
-      ],
-      "typeVersion": 1,
-      "id": "8000604c-44e2-4313-a79f-2adafe077316",
-      "name": "Sticky Note1"
     },
     {
       "parameters": {
         "operation": "update",
         "documentId": {
           "__rl": true,
-          "value": "1mP18TlU_3DihJRpiunwA-McrNxehNkOUTmvE4fQ93YA",
+          "value": "1cxBexO_JACMJ6yIMsX87_VwwFgy5pVEezvJZ5MTh1Bk",
           "mode": "list",
-          "cachedResultName": "Buisness Workflow",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mP18TlU_3DihJRpiunwA-McrNxehNkOUTmvE4fQ93YA/edit?usp=drivesdk"
+          "cachedResultName": "Leads Manager",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cxBexO_JACMJ6yIMsX87_VwwFgy5pVEezvJZ5MTh1Bk/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
-          "value": 296892909,
+          "value": "gid=0",
           "mode": "list",
-          "cachedResultName": "Currunt Leads",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1mP18TlU_3DihJRpiunwA-McrNxehNkOUTmvE4fQ93YA/edit#gid=296892909"
+          "cachedResultName": "My Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cxBexO_JACMJ6yIMsX87_VwwFgy5pVEezvJZ5MTh1Bk/edit#gid=0"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Name": "={{ $('Fetch - Currunt Leads').item.json.Name }}",
-            "Email": "={{ $('Fetch - Currunt Leads').item.json.Email }}",
-            "LikendIn Profile": "={{ $('Fetch - Currunt Leads').item.json['LikendIn Profile'] }}",
-            "Role": "={{ $('Fetch - Currunt Leads').item.json.Role }}",
-            "Company": "={{ $('Fetch - Currunt Leads').item.json.Company }}",
-            "Company Profile": "={{ $('Fetch - Currunt Leads').item.json['Company Profile'] }}",
-            "Company Website": "={{ $('Fetch - Currunt Leads').item.json['Company Website'] }}",
-            "Summary": "={{ $('Fetch - Currunt Leads').item.json.Summary }}",
-            "Status": "Done",
-            "Subject": "={{ $json.output[0].content[0].text.subject }}",
-            "Ice Breaker": "={{ $json.output[0].content[0].text.icebreaker }}",
-            "Elevator Pitch": "={{ $json.output[0].content[0].text.pitch }}",
-            "Call to action": "={{ $json.output[0].content[0].text.cta }}",
-            "Post script": "={{ $json.output[0].content[0].text.ps }}",
-            "Type": "={{ $json.output[0].type }}"
+            "Email": "={{ $(\"Leads\").item.json.Email }}",
+            "Status": "Drafted",
+            "Subject": "={{ $('Cold Email').item.json.output[0].content[0].text.subject }}",
+            "Ice Breaker": "={{ $('Cold Email').item.json.output[0].content[0].text.icebreaker }}",
+            "Elevator Pitch": "={{ $('Cold Email').item.json.output[0].content[0].text.pitch }}",
+            "Call to action": "={{ $('Cold Email').item.json.output[0].content[0].text.cta }}",
+            "Post script": "={{ $('Cold Email').item.json.output[0].content[0].text.ps }}",
+            "Type": "Email"
           },
           "matchingColumns": [
             "Email"
           ],
           "schema": [
             {
-              "id": "Name",
-              "displayName": "Name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "Type",
-              "displayName": "Type",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
               "id": "Email",
               "displayName": "Email",
               "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "LikendIn Profile",
-              "displayName": "LikendIn Profile",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Role",
-              "displayName": "Role",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Company",
-              "displayName": "Company",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Company Profile",
-              "displayName": "Company Profile",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Company Website",
-              "displayName": "Company Website",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true
-            },
-            {
-              "id": "Summary",
-              "displayName": "Summary",
-              "required": false,
-              "defaultMatch": false,
+              "defaultMatch": true,
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true
@@ -220,7 +91,7 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": false
             },
             {
               "id": "Subject",
@@ -229,7 +100,7 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": false
             },
             {
               "id": "Ice Breaker",
@@ -238,7 +109,7 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": false
             },
             {
               "id": "Elevator Pitch",
@@ -247,7 +118,7 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": false
             },
             {
               "id": "Call to action",
@@ -256,7 +127,7 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": false
             },
             {
               "id": "Post script",
@@ -265,18 +136,16 @@
               "defaultMatch": false,
               "display": true,
               "type": "string",
-              "canBeUsedToMatch": true
+              "canBeUsedToMatch": false
             },
             {
-              "id": "row_number",
-              "displayName": "row_number",
+              "id": "Type",
+              "displayName": "Type",
               "required": false,
               "defaultMatch": false,
               "display": true,
-              "type": "number",
-              "canBeUsedToMatch": true,
-              "readOnly": true,
-              "removed": true
+              "type": "string",
+              "canBeUsedToMatch": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -284,18 +153,119 @@
         },
         "options": {}
       },
+      "id": "74486993-53f5-4bad-8c4a-6f9d21d40159",
+      "name": "Update Sheet - Email Drafted",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        768,
-        368
+        672,
+        592
       ],
-      "id": "c961c31c-9623-4dda-af67-9360677d1ef5",
-      "name": "Updation & Storage",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "O5J0MIbtTHuGSYtB",
-          "name": "Meher - Sheets"
+          "id": "vL7UpKlt0R3kfrKx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "ea9d3c3b-1da6-4280-895c-761a6d47daa3",
+      "name": "Daily Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -944,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cxBexO_JACMJ6yIMsX87_VwwFgy5pVEezvJZ5MTh1Bk",
+          "mode": "list",
+          "cachedResultName": "Leads Manager",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cxBexO_JACMJ6yIMsX87_VwwFgy5pVEezvJZ5MTh1Bk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "My Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cxBexO_JACMJ6yIMsX87_VwwFgy5pVEezvJZ5MTh1Bk/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "5fbba39d-bd6f-4cf9-8990-2961bba93422",
+      "name": "Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -768,
+        640
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "vL7UpKlt0R3kfrKx",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "b10c8703-e8d4-47c3-9b75-e1ff416d635f",
+      "name": "Number of Leads",
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -592,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a cold outreach research assistant. Your job is to extract sharp, personalized insights from company and LinkedIn URLs that \nwill be used in analyzing and drafting a cold email/DM\n\nINPUT:\nYou will receive up to two links:\n1. Company Website URL (optional)\n2. LinkedIn Profile URL (optional)\n\nTASK:\nAnalyze the provided link(s) and extract insights optimized of writing a cold mail \n\nRULES:\n\n1. If ONLY ONE link is provided:\n   - Generate a single cohesive report (MAX 130 words)\n\n2. If BOTH links are provided:\n   - Generate ONE combined report (MAX 260 words)\n   - Two sections: Company Insights / LinkedIn Insights\n   - No repetition between sections\n\n3. WHAT TO LOOK FOR:\n   Company Website:\n   - Their core promise / positioning statement\n   - Who they serve (niche audience)\n   - Any growth signals (new launches, hiring, expansion)\n   - Pain points their product solves\n   - Tone of their brand messaging\n\n   LinkedIn Profile:\n   - Person's current role and tenure\n   - Recent posts, shares, or activity (what they care about)\n   - Career trajectory (promotion, new role = warm signal)\n   - Skills or focus areas that match your outreach angle\n   - Any shared context (mutual connections, interests, content)\n\n4. CONTENT RULES:\n   - Be specific, not generic. \"They sell health snacks\" is bad.\n     \"They position around guilt-free convenience for urban \n     professionals\" is good.\n   - If you can't find a meaningful insight, skip it. \n     Don't pad with filler.\n   - Write as notes for a copywriter, not a business analyst.\n   - Every line should either spark a personalized opener OR \n     justify why this person needs your solution NOW.\n\n5. OUTPUT FORMAT:\n\nIf ONE link:\n[Short Research Report]\nInsights only. No intros or conclusions.\n\nIf TWO links:\nCompany Insights:\n[Tagged insights]\n\nLinkedIn Insights:\n[Tagged insights]\n\nIMPORTANT:\n- Strictly within word limits.\n- Zero fluff. Every word must earn its place.\n- The output feeds directly into an AI that writes cold emails.\n  Treat it like a creative brief, not a summary."
+            },
+            {
+              "content": "=The given outputs are:\n- Company's Webiste: {{ $json['Website '] }}\n- LinkedIn: {{ $json['LikendIn Profile'] }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -416,
+        640
+      ],
+      "id": "8631bc26-ddbc-486c-b245-6d1cd6085592",
+      "name": "Researcher",
+      "credentials": {
+        "openAiApi": {
+          "id": "AJUyEfipeY8dMHNc",
+          "name": "n8n free OpenAI API credits"
         }
       }
     },
@@ -303,18 +273,18 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "gpt-4.1-mini",
+          "value": "gpt-4o-mini",
           "mode": "list",
-          "cachedResultName": "GPT-4.1-MINI"
+          "cachedResultName": "GPT-4O-MINI"
         },
         "responses": {
           "values": [
             {
               "role": "system",
-              "content": "=You are an expert email personaliser."
+              "content": "You are a professional cold mail writer."
             },
             {
-              "content": "=You are a cold outreach writer.\n\nGUIDELINES:\n- Use simple, direct language (no fancy words)\n- Keep sentences short and minimal\n- Personalize naturally using company or role context\n- Do not copy input text verbatim — paraphrase it\n- Avoid generic lines like “I came across your profile”\n- Focus on relevance and clarity\n- Do not sound like a template\n- Use only one clear call to action\n- Do not add explanations or extra text outside the required format\n\nTASK:\nUsing the input below, generate a cold outreach message, learn and study data from linkedIn profile, also search web for {company}.\n{{ $json.Name }}\n{{ $json.Type }}\n{{ $json.Email }}\n{{ $json['LikendIn Profile'] }}\n{{ $json.Role }}\n{{ $json.Company }}\n{{ $json['Company Website'] }}\n{{ $json['Company Profile'] }}\n{{ $json.Summary }}\n\nINPUT:\n\nSTRUCTURE (follow strictly):\nif is \"Email\" then:\nSubject: Noticed this at {Company}\nif is \"DM\" then:\nSubject:Hey,\n\nIcebreaker: I took a quick look at {Company} and noticed a strong focus on {specific thing} — something I’ve been keeping an eye on lately.\n\nPitch: I work with teams to streamline their workflows and reduce manual work using simple automation.\n\nCTA: Would it make sense to explore this briefly?\n\nP.S.: Recently did something similar for a team in your space — love to walk you through it.\nP.S. should be strictly same as the above.\n\nRULES:\n- Keep total output under 120 words\n- Keep it natural and human\n- Ensure the icebreaker is relevant to the company\n- Do not change the structure\n- Output exactly in this format (no JSON, no markdown):\n\n{\"subject\": \"\",\"icebreaker\": \"\",\"pitch\": \"\",\"cta\": \"\",\"ps\": \"\"}\n\n"
+              "content": "=You are a cold outreach writer.\n\nGUIDELINES:\n- Use simple, direct language (no fancy words)\n- Keep sentences short and minimal\n- Personalize naturally using company or role context\n- Do not copy input text verbatim — paraphrase it\n- Avoid generic lines like “I came across your profile”\n- Focus on relevance and clarity\n- Do not sound like a template\n- Use only one clear call to action\n- Do not add explanations or extra text outside the required format\n\nTASK:\nUsing the input below, generate a cold outreach message, learn and study data from linkedIn profile, also search web for {company}.\n{{ $json.Name }}\n{{ $json.Type }}\n{{ $json.Email }}\n{{ $json['LikendIn Profile'] }}\n{{ $json.Role }}\n{{ $json.Company }}\n{{ $json['Website '] }}\n{{ $json['Company\\'s LinkedIn '] }}\n{{ $json['LikendIn Profile'] }}\n{{ $json.Summary }}\n\nINPUT:\n\nSTRUCTURE (follow strictly):\nif is \"Email\" then:\nSubject: Noticed this at {Company}\nif is \"DM\" then:\nSubject:Hey,\n\nIcebreaker: I took a quick look at {Company} and noticed a strong focus on {specific thing} — something I’ve been keeping an eye on lately.\n\nPitch: I work with teams to streamline their workflows and reduce manual work using simple automation.\n\nCTA: Would it make sense to explore this briefly?\n\nP.S.: Recently did something similar for a team in your space — love to walk you through it.\nP.S. should be strictly same as the above.\n\nRULES:\n- Keep total output under 120 words\n- Keep it natural and human\n- Ensure the icebreaker is relevant to the company\n- Do not change the structure\n- Output exactly in this format (no JSON, no markdown):\n\n{\"subject\": \"\",\"icebreaker\": \"\",\"pitch\": \"\",\"cta\": \"\",\"ps\": \"\"}"
             }
           ]
         },
@@ -330,95 +300,42 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 2.1,
       "position": [
-        448,
-        368
+        48,
+        640
       ],
-      "id": "9aefa972-13c5-41da-928f-32c71d6aafbc",
-      "name": "Personaliser - Specific",
+      "id": "a5ec2ee5-afbd-457a-954f-586a09e0ec7f",
+      "name": "Cold Email",
       "credentials": {
         "openAiApi": {
-          "id": "HUpabexxp7sCfp9K",
-          "name": "Nvidia Credits"
+          "id": "AJUyEfipeY8dMHNc",
+          "name": "n8n free OpenAI API credits"
         }
       }
     },
     {
       "parameters": {
-        "resource": "draft",
-        "subject": "={{ $('Personaliser - Specific').item.json.output[0].content[0].text.subject }}",
-        "message": "=Hey {{ $('Fetch - Currunt Leads').item.json.Name }},\n{{ $('Personaliser - Specific').item.json.output[0].content[0].text.icebreaker }}\n\n{{ $('Personaliser - Specific').item.json.output[0].content[0].text.pitch }}\n\n{{ $('Personaliser - Specific').item.json.output[0].content[0].text.cta }}\n\nps: {{ $('Personaliser - Specific').item.json.output[0].content[0].text.ps }}",
-        "options": {
-          "sendTo": "={{ $('Fetch - Currunt Leads').item.json.Email }}"
-        }
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        960,
-        368
-      ],
-      "id": "5b105268-7173-4956-bb8b-0bba76ef934d",
-      "name": "Create a draft",
-      "webhookId": "a2ccd9b0-e9c5-49c0-bd4e-80ba67c30d37",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "iTy7yjMRp5MmZGXW",
-          "name": "Gmail OAuth2 API"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "content": "## Personal Brain\n- This is a customised brain for one speciality an individul does.\n- Customise according to our needs",
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        432,
-        176
-      ],
-      "typeVersion": 1,
-      "id": "34308fe5-fff6-41d2-a810-9fff95f5fcce",
-      "name": "Sticky Note2"
-    },
-    {
-      "parameters": {
-        "content": "## Updation & Sending\n- Updates the google sheets with all the data.\n- Curruntly creates a draft or we can directly send it too.",
-        "width": 288,
-        "color": 4
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        720,
-        176
-      ],
-      "typeVersion": 1,
-      "id": "07851dec-0110-41ba-9c1f-106e6f4855e7",
-      "name": "Sticky Note3"
-    },
-    {
-      "parameters": {
-        "content": "## Version 2 Ideas:\n- Add a automatic lead generator so we dont need to write the sheets part ourselves.\n- Add a quality control before sending the mail - ai model for approving mails.",
-        "height": 192,
+        "content": "## Drafting & Mailing",
+        "height": 240,
+        "width": 496,
         "color": 3
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -64,
-        0
+        16,
+        560
       ],
       "typeVersion": 1,
-      "id": "39d3f0eb-75c9-4146-b161-32e29be5653c",
-      "name": "Sticky Note4"
+      "id": "564c7b57-8510-4496-ac2b-c92f53ee01e4",
+      "name": "Sticky Note"
     }
   ],
   "pinData": {
-    "Personaliser - Specific": [
+    "Cold Email": [
       {
         "json": {
           "output": [
             {
-              "id": "msg_03d42b61c2470ee90069bedb8947e88193aadb5b1a752cd2f3",
+              "id": "msg_087f5455d87729b00069e4bb5358108193b4608e6b0b3e6e7a",
               "type": "message",
               "status": "completed",
               "content": [
@@ -427,9 +344,9 @@
                   "annotations": [],
                   "logprobs": [],
                   "text": {
-                    "subject": "Noticed this at Yoga Bar",
-                    "icebreaker": "I took a quick look at Yoga Bar and saw your focus on offering healthy snacks for busy lifestyles — a smart approach given today's fast pace.",
-                    "pitch": "I work with teams to simplify their processes and cut down on repetitive tasks through easy automation.",
+                    "subject": "Noticed this at {Company}",
+                    "icebreaker": "I took a quick look at {Company} and noticed a strong focus on efficiency — something I’ve been keeping an eye on lately.",
+                    "pitch": "I work with teams to streamline their workflows and reduce manual work using simple automation.",
                     "cta": "Would it make sense to explore this briefly?",
                     "ps": "Recently did something similar for a team in your space — love to walk you through it."
                   }
@@ -438,49 +355,74 @@
               "role": "assistant"
             }
           ]
+        },
+        "pairedItem": {
+          "item": 0
         }
       }
     ]
   },
   "connections": {
-    "Schedule Trigger": {
+    "Create Email Draft": {
       "main": [
         [
           {
-            "node": "Fetch - Currunt Leads",
+            "node": "Update Sheet - Email Drafted",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Fetch - Currunt Leads": {
+    "Daily Trigger": {
       "main": [
         [
           {
-            "node": "Personaliser - Specific",
+            "node": "Leads",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Updation & Storage": {
+    "Leads": {
       "main": [
         [
           {
-            "node": "Create a draft",
+            "node": "Number of Leads",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Personaliser - Specific": {
+    "Number of Leads": {
       "main": [
         [
           {
-            "node": "Updation & Storage",
+            "node": "Researcher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Researcher": {
+      "main": [
+        [
+          {
+            "node": "Cold Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cold Email": {
+      "main": [
+        [
+          {
+            "node": "Create Email Draft",
             "type": "main",
             "index": 0
           }
@@ -493,11 +435,11 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "931f3277-c648-4c2c-a0b7-07c1a05542cd",
+  "versionId": "fe68697c-6672-420a-850f-fa72eca5b7db",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "20dd2d0d8018217dbd165d841d4c440719c8e1a971c716ad7532a041cf2470f8"
+    "instanceId": "116a404514e7383db134d2f1f7f421aa533d0a56f50e82bddb90491c89a4f919"
   },
-  "id": "DY6CnLNsxjEKb53E",
+  "id": "ief1rI7GTSyKDKt0",
   "tags": []
 }
